@@ -35,9 +35,9 @@ body{font-family:'Tajawal',system-ui,sans-serif;-webkit-font-smoothing:antialias
 .num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum";direction:ltr;unicode-bidi:isolate}
 
 /* header */
-#name{height:270px;overflow:hidden;display:flex;align-items:center;justify-content:center;padding:40px 60px 0;text-align:center;
+#name{height:270px;overflow:hidden;display:flex;align-items:center;justify-content:center;padding:14px 60px 40px;text-align:center;
   font-family:var(--nameFont),serif;font-weight:700;font-size:150px;line-height:1.15;color:var(--ink);white-space:nowrap}
-#nameImg{width:960px;height:230px;background:var(--ink);-webkit-mask:var(--nameMask) center/contain no-repeat;mask:var(--nameMask) center/contain no-repeat}
+#nameImg{width:calc(960px * var(--nsc,1));height:calc(230px * var(--nsc,1));max-width:100%;background:var(--ink);-webkit-mask:var(--nameMask) center/contain no-repeat;mask:var(--nameMask) center/contain no-repeat}
 #nameTxt{white-space:nowrap}
 #clock{height:190px;display:flex;direction:ltr;align-items:flex-end;justify-content:center;gap:6px;font-weight:700;color:var(--ink)}
 #clock .hm{font-size:210px;line-height:.95;letter-spacing:2px}
@@ -69,7 +69,7 @@ body{font-family:'Tajawal',system-ui,sans-serif;-webkit-font-smoothing:antialias
 .row.sun .nm::before,.row.sun .nm::after{display:none}
 
 /* bottom */
-#bottom{flex:1;display:grid;grid-template-columns:1fr 1fr;margin:24px 40px 24px;background:var(--panel);border-radius:22px;
+#bottom{flex:1;display:grid;grid-template-columns:1fr 1fr;margin:18px 40px 8px;background:var(--panel);border-radius:22px;
   border:2px solid var(--sepB);overflow:hidden}
 #bottom>div{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:16px}
 #bottom>div+div{border-right:3px solid var(--sepA)}
@@ -81,18 +81,19 @@ body{font-family:'Tajawal',system-ui,sans-serif;-webkit-font-smoothing:antialias
 #bottom.wide{grid-template-columns:1fr}
 #bottom.wide #phone{display:none}
 #bottom.wide>div+div{border-right:0}
-#bottom.wide .lbl{font-size:62px}
+#bottom.wide .lbl{font-size:56px}
 
 /* ticker */
 /* landscape design */
 #stage.land{width:1920px;height:1080px}
-#stage.land #main{display:grid;grid-template-columns:800px 1fr;grid-template-rows:auto 1fr 92px;grid-template-areas:"top tbl" "bottom tbl" "tick tick"}
+#stage.land #main{display:grid;grid-template-columns:800px 1fr;grid-template-rows:auto 1fr 76px 92px;grid-template-areas:"top tbl" "bottom tbl" "brand tbl" "tick tick"}
+#stage.land #brandRow{grid-area:brand;padding:0 40px 0 24px;margin:0}
 #stage.land #top{grid-area:top}
 #stage.land #tbl{grid-area:tbl;display:flex;flex-direction:column;justify-content:center;padding:24px 10px 24px 50px}
-#stage.land #bottom{grid-area:bottom;margin:6px 40px 28px 24px}
+#stage.land #bottom{grid-area:bottom;margin:6px 40px 8px 24px}
 #stage.land #ticker{grid-area:tick}
-#stage.land #name{height:200px;padding:30px 30px 0}
-#stage.land #nameImg{width:720px;height:170px}
+#stage.land #name{height:200px;padding:14px 30px 26px}
+#stage.land #nameImg{width:calc(720px * var(--nsc,1));height:calc(170px * var(--nsc,1))}
 #stage.land #clock{height:165px}
 #stage.land #clock .hm{font-size:175px}
 #stage.land #clock .s{font-size:76px;margin-bottom:18px}
@@ -113,9 +114,10 @@ body{font-family:'Tajawal',system-ui,sans-serif;-webkit-font-smoothing:antialias
 #stage.land #ovAdhkar{padding:36px 90px;justify-content:center}
 #stage.land #ovAdhkar h2{font-size:64px;margin:0 0 22px}
 #stage.land #ovAdhkar p{font-size:48px;line-height:1.5;padding:12px 26px;margin:7px 0}
-#brand{position:absolute;left:0;top:0;bottom:0;z-index:2;display:flex;align-items:center;gap:14px;padding:0 20px;background:#0B1430;border-right:4px solid #D4AF5F;direction:ltr}
-#brand img{height:48px;display:block}
-#brand .ph{display:flex;align-items:center;gap:6px;font:800 34px 'Tajawal',sans-serif;color:#F3E7C8;letter-spacing:1px}
+#brandRow{height:66px;flex:none;display:flex;align-items:center;justify-content:flex-start;padding:0 40px;margin-bottom:10px}
+#brand{display:flex;align-items:center;gap:14px;height:58px;padding:0 18px;background:#0B1430;border:2px solid #D4AF5F;border-radius:14px;direction:ltr}
+#brand img{height:40px;display:block}
+#brand .ph{display:flex;align-items:center;gap:6px;font:800 30px 'Tajawal',sans-serif;color:#F3E7C8;letter-spacing:1px}
 #brand .ph svg{width:28px;height:28px}
 #ticker{height:92px;background:var(--tick);color:var(--tickInk);position:relative;overflow:hidden;flex:none}
 #tickTrack{position:absolute;top:0;height:100%;display:flex;align-items:center;white-space:nowrap;
@@ -206,9 +208,11 @@ body{font-family:'Tajawal',system-ui,sans-serif;-webkit-font-smoothing:antialias
      <div id="cd" class="num">--:--</div>
     </div>
    </div>
-   <div id="ticker"><div id="tickTrack"></div>
+   <div id="brandRow">
     <!-- BRAND: change brand.png and the phone number here -->
-    <div id="brand"><img src="brand.png" alt="شاشات المتوكل"><span class="ph"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.6a1 1 0 0 1-.25 1z" fill="#D4AF5F"/></svg>97972234</span></div></div>
+    <div id="brand"><img src="brand.png" alt="شاشات المتوكل"><span class="ph"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.6a1 1 0 0 1-.25 1z" fill="#D4AF5F"/></svg>97972234</span></div>
+   </div>
+   <div id="ticker"><div id="tickTrack"></div></div>
   </div>
   <div class="ov" id="ovIqama"><div class="t" id="oiT">الإقامة بعد</div><div class="c num" id="oiC">00:00</div><div class="p">أغلق الجوال · سوّوا الصفوف</div></div>
   <div class="ov" id="ovPrayer"></div>
@@ -252,7 +256,7 @@ const PR = [{k:'fajr',n:'الفجر'},{k:'dhuhr',n:'الظهر'},{k:'asr',n:'ا�
 
 /* ---------- settings ---------- */
 const DEF = {
- name:'جامع سعد الشلاحي', uiFont:'Tajawal', orient:'p', nameMode:'image', nameImg:'', nameFont:'Amiri', nameSize:150, theme:'classic',
+ name:'جامع سعد الشلاحي', uiFont:'Tajawal', nameImgScale:100, orient:'p', nameMode:'image', nameImg:'', nameFont:'Amiri', nameSize:150, theme:'classic',
  h12:true, showSec:true, showSun:true, duha:15, rotate:0,
  tz:3, lat:29.3375, lng:47.9744, fajrAng:18, ishaAng:17.5,
  adj:{fajr:0,sunrise:1,dhuhr:1,asr:1,maghrib:1,isha:1},
@@ -329,11 +333,31 @@ function applyLook(){
   st.setProperty('--pat',PAT);
   const nm=$('nameTxt'); nm.textContent=S.name; $('name').style.fontFamily="'"+S.nameFont+"',serif";
   const useImg=S.nameMode!=='text'; $('nameImg').style.display=useImg?'':'none'; nm.style.display=useImg?'none':'';
-  st.setProperty('--nameMask','url('+(S.nameImg||NAME_IMG)+')');
+  st.setProperty('--nameMask','url('+(S.nameImg||NAME_IMG)+')'); st.setProperty('--nsc',(S.nameImgScale||100)/100);
   $('ss').style.display=S.showSec?'':'none';
   fitName(); layout(); buildTicker();
 }
 function hexA(h,a){const n=parseInt(h.slice(1),16);return `rgba(${n>>16&255},${n>>8&255},${n&255},${a})`}
+/* any calligraphy image (dark ink on white, or transparent PNG) -> trimmed transparent mask, so it takes the theme colour */
+function prepCallig(src,done){
+  const im=new Image(); im.onload=()=>{
+    const W=Math.min(1800,im.width), H=Math.round(im.height*W/im.width), c=document.createElement('canvas'); c.width=W; c.height=H;
+    const x=c.getContext('2d'); x.fillStyle='#fff'; x.fillRect(0,0,W,H); x.drawImage(im,0,0,W,H);
+    const d=x.getImageData(0,0,W,H), p=d.data; let x0=W,y0=H,x1=0,y1=0;
+    // decide ink: darker than background (usual) or lighter (white ink on dark background)
+    let sum=0; for(let i=0;i<p.length;i+=16) sum+=p[i]*.3+p[i+1]*.59+p[i+2]*.11; const bgLight=(sum/(p.length/16))>128;
+    for(let i=0,j=0;i<p.length;i+=4,j++){
+      const L=p[i]*.3+p[i+1]*.59+p[i+2]*.11; let a=bgLight?(235-L)/(235-60):(L-20)/(195-20); a=Math.max(0,Math.min(1,a));
+      p[i]=p[i+1]=p[i+2]=0; p[i+3]=Math.round(a*255);
+      if(a>0.15){const X=j%W,Y=(j/W)|0; if(X<x0)x0=X; if(X>x1)x1=X; if(Y<y0)y0=Y; if(Y>y1)y1=Y;}
+    }
+    x.putImageData(d,0,0);
+    if(x1<=x0||y1<=y0){ done(src); return; }
+    const m=8, o=document.createElement('canvas'); o.width=x1-x0+2*m; o.height=y1-y0+2*m;
+    o.getContext('2d').drawImage(c,x0-m,y0-m,o.width,o.height,0,0,o.width,o.height);
+    done(o.toDataURL('image/png'));
+  }; im.onerror=()=>done(src); im.src=src;
+}
 function fitName(){const nm=$('name');if(S.nameMode!=='text')return;nm.style.fontSize=S.nameSize+'px';let fs=S.nameSize;
   requestAnimationFrame(()=>{while(nm.scrollWidth>nm.clientWidth&&fs>50){fs-=4;nm.style.fontSize=fs+'px'}});}
 function layout(){
@@ -397,12 +421,12 @@ function tick(){
     $('cdLbl').innerHTML = toSun ? 'المتبقي على الشروق<small>Time to Sunrise</small>'
                                  : `المتبقي على أذان ${next.n}<small>Time to next Azan</small>`;
     $('cd').textContent=fmtDur(target-t,true); $('cd').className='num';
-    $('cd').style.fontSize='190px';
+    $('cd').style.fontSize='172px';
   }
   // clock area: countdown for the last minute, then hold at 0
   const lastMin = (state.mode==='iqama' && state.left<=60000) || state.mode==='zero';
   $('hm').textContent=fmtT(now); $('ss').textContent=':'+p2(now.getSeconds()); $('ss').style.display=S.showSec?'':'none';
-  if(lastMin){ $('cd').textContent = state.mode==='zero'?'0':String(Math.ceil(state.left/1000)); $('cd').className='num iqm last'; $('cd').style.fontSize='230px'; }
+  if(lastMin){ $('cd').textContent = state.mode==='zero'?'00':p2(Math.ceil(state.left/1000)); $('cd').className='num iqm last'; $('cd').style.fontSize='190px'; }
   // overlays
   const showIq = state.mode==='iqama' && S.fullIqama && state.left<=60000*1 ;
   $('ovIqama').classList.toggle('on', !!showIq);
@@ -448,7 +472,9 @@ function buildSettings(){
   sec('اسم الجامع والخط',`
    <div class="f"><label for="iName">اسم الجامع</label><input type="text" id="iName" value="${esc(S.name)}"></div>
    <div class="f"><label>طريقة الاسم</label>${cyc("iMode",[['image','مخطوط (صورة الخط)'],['text','نص بخط من القائمة']],S.nameMode==='text'?'text':'image')}</div>
-   <div class="f"><label for="iImg">تغيير صورة الخط (PNG شفاف)</label><input type="file" id="iImg" accept="image/*"></div>
+   <div class="f"><label for="iImg">إضافة مخطوطة الاسم من ملف (صورة)</label><input type="file" id="iImg" accept="image/*"></div>
+   <div class="f"><label>حجم المخطوطة (%)</label>${stepper('nameImgScale',40,130,5)}</div>
+   <div class="f"><label>رجوع للمخطوطة الأصلية</label><button type="button" class="btn" data-act="resetImg">استرجاع</button></div>
    <div class="f"><label>خط الاسم (لوضع النص)</label>${cyc("iFont",Object.entries(FONTS),S.nameFont)}</div>
    <div class="f"><label>خط الشاشة (الأرقام والنصوص)</label>${cyc("iUiF",Object.entries(UIFONTS),S.uiFont||'Tajawal')}</div>
    <div class="f"><label>حجم الاسم</label>${stepper('nameSize',60,200,10)}</div>`)+
@@ -558,6 +584,7 @@ $('set').addEventListener('click',e=>{
   if(b.dataset.d){bump(b.closest('.stp'),+b.dataset.d);return}
   if(b.dataset.c){cycle(b.closest('.stp'),+b.dataset.c);return}
   if(b.dataset.theme){S.theme=b.dataset.theme;document.querySelectorAll('.th').forEach(x=>x.classList.toggle('sel',x===b));live();return}
+  if(b.dataset.act==='resetImg'){S.nameImg='';S.nameImgScale=100;live();buildSettings();showPage(curPage);return}
   if(b.dataset.sim){simulate(b.dataset.sim);closeAll();return}
   if(b.dataset.adh){ const m=b.dataset.adh;
     if(m==='notif'){ if(BR){ try{ BR.test('الظهر', !!S.adhanSound); }catch(e){} } else playAdhan(); }
@@ -567,7 +594,7 @@ $('set').addEventListener('click',e=>{
 });
 $('set').addEventListener('input',e=>{
   const t=e.target;
-  if(t.id==='iImg'){const f=t.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{S.nameImg=r.result;S.nameMode='image';live()};r.readAsDataURL(f);return}
+  if(t.id==='iImg'){const f=t.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{prepCallig(r.result,u=>{S.nameImg=u;S.nameMode='image';live()})};r.readAsDataURL(f);return}
   setField(t.id,t.value);
 });
 function setField(id,v){
