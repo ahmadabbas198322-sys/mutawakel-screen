@@ -128,7 +128,7 @@ body{font-family:'Tajawal',system-ui,sans-serif;-webkit-font-smoothing:antialias
 #tickPrev p{margin:0 0 8px}
 #tickPrev .q{font-family:'Amiri Quran','Amiri',serif;font-size:18px}
 #tickPrev small{color:#6a7593}
-#ticker{height:92px;background:var(--tick);color:var(--tickInk);position:relative;overflow:hidden;flex:none}
+#ticker{contain:strict;height:92px;background:var(--tick);color:var(--tickInk);position:relative;overflow:hidden;flex:none}
 #tickTrack{position:absolute;top:0;height:100%;display:flex;align-items:center;white-space:nowrap;
   font-family:'Amiri',serif;font-size:50px;will-change:transform}
 #tickTrack span.sep{opacity:.55;margin:0 34px}
@@ -186,6 +186,8 @@ body{font-family:'Tajawal',system-ui,sans-serif;-webkit-font-smoothing:antialias
 .btn.pri{background:#2563eb;color:#fff}
 #setBox :focus-visible,#setBox .focus{outline:3px solid #f59e0b;outline-offset:2px}
 #hint{position:fixed;bottom:12px;left:12px;z-index:40;background:rgba(0,0,0,.55);color:#fff;font:500 14px 'Tajawal';padding:8px 14px;border-radius:999px;transition:opacity 1s;pointer-events:none}
+#tickTrack{will-change:transform;backface-visibility:hidden}
+.num,#hm,#ss,#cd{font-variant-numeric:tabular-nums}
 </style>
 </head>
 <body>
@@ -407,14 +409,23 @@ function renderRows(plan,nextKey){
 let sim=null; // preview simulation {mode, until}
 /* Kuwait time regardless of the device's time-zone setting: a Date whose local fields show UTC+S.tz */
 function kNow(){const d=new Date(),ms=d.getTime()+(simOffset||0);return new Date(ms+(tzOffH(ms)*60+d.getTimezoneOffset())*60000)}
+/* write to the screen only when something changed, so the moving ticker is never disturbed */
+const _w={};
+function _set(id,k,v,f){ const key=id+k; if(_w[key]===v) return; _w[key]=v; f($(id),v); }
+function H(id,v){_set(id,'h',v,(e,v)=>e.innerHTML=v)} function T(id,v){_set(id,'t',v,(e,v)=>e.textContent=v)}
+function C(id,v){_set(id,'c',v,(e,v)=>e.className=v)} function F(id,v){_set(id,'f',v,(e,v)=>e.style.fontSize=v)}
+function D(id,v){_set(id,'d',v,(e,v)=>e.style.display=v)}
+/* prayer times are computed once per day (cache cleared when settings change) */
+let _plans={};
+function planFor(d){ const k=d.getFullYear()+'-'+d.getMonth()+'-'+d.getDate(); return _plans[k]||(_plans[k]=dayPlan(new Date(d.getFullYear(),d.getMonth(),d.getDate(),12))); }
 function tick(){
   const now=kNow();
-  const today=dayPlan(now), tomorrow=dayPlan(new Date(now.getFullYear(),now.getMonth(),now.getDate()+1));
+  const today=planFor(now), tomorrow=planFor(new Date(now.getFullYear(),now.getMonth(),now.getDate()+1));
   // clock
   const hj=hijri(now);
-  $('hij').innerHTML=hj?`<span class="num">${hj.d}</span><span>${HM[hj.m-1]}</span><span class="num">${hj.y}</span>`:'';
-  $('greg').innerHTML=`<span class="num">${p2(now.getDate())}</span><span>${GM[now.getMonth()]}</span><span class="num">${now.getFullYear()}</span>`;
-  $('dayName').textContent=DAYS[now.getDay()];
+  H('hij',hj?`<span class="num">${hj.d}</span><span>${HM[hj.m-1]}</span><span class="num">${hj.y}</span>`:'');
+  H('greg',`<span class="num">${p2(now.getDate())}</span><span>${GM[now.getMonth()]}</span><span class="num">${now.getFullYear()}</span>`);
+  T('dayName',DAYS[now.getDay()]);
   // state
   let state={mode:'normal'}, t=now.getTime();
   for(const x of today.list){
@@ -434,26 +445,26 @@ function tick(){
   renderRows(today,hiKey);
   $('bottom').classList.toggle('wide', !iqm);
   if(iqm){
-    $('cdLbl').innerHTML='الإقامة بعد<small>Iqama after</small>'; $('cd').textContent=fmtDur(state.left); $('cd').className='num iqm';
-    $('cdLbl').innerHTML='الإقامة بعد<small>Iqama after</small>';
-    $('cd').style.fontSize='150px';
+    H('cdLbl','الإقامة بعد<small>Iqama after</small>'); T('cd',fmtDur(state.left)); C('cd','num iqm');
+    H('cdLbl','الإقامة بعد<small>Iqama after</small>');
+    F('cd','150px');
   } else {
     const sr=today.sunrise.getTime(), fj=today.list[0].az.getTime();
     const toSun = t>=fj && t<sr;
     const target = toSun? sr : next.az.getTime();
-    $('cdLbl').innerHTML = toSun ? 'المتبقي على الشروق<small>Time to Sunrise</small>'
-                                 : `المتبقي على أذان ${next.n}<small>Time to next Azan</small>`;
-    $('cd').textContent=fmtDur(target-t,true); $('cd').className='num';
-    $('cd').style.fontSize='172px';
+    H('cdLbl',toSun ? 'المتبقي على الشروق<small>Time to Sunrise</small>'
+                                 : `المتبقي على أذان ${next.n}<small>Time to next Azan</small>`);
+    T('cd',fmtDur(target-t,true)); C('cd','num');
+    F('cd','172px');
   }
   // clock area: countdown for the last minute, then hold at 0
   const lastMin = (state.mode==='iqama' && state.left<=60000) || state.mode==='zero';
-  $('hm').textContent=fmtT(now); $('ss').textContent=':'+p2(now.getSeconds()); $('ss').style.display=S.showSec?'':'none';
-  if(lastMin){ $('cd').textContent = state.mode==='zero'?'00':p2(Math.ceil(state.left/1000)); $('cd').className='num iqm last'; $('cd').style.fontSize='190px'; }
+  T('hm',fmtT(now)); T('ss',':'+p2(now.getSeconds())); D('ss',S.showSec?'':'none');
+  if(lastMin){ T('cd',state.mode==='zero'?'00':p2(Math.ceil(state.left/1000))); C('cd','num iqm last'); F('cd','190px'); }
   // overlays
   const showIq = state.mode==='iqama' && S.fullIqama && state.left<=60000*1 ;
   $('ovIqama').classList.toggle('on', !!showIq);
-  if(showIq){ $('oiC').textContent=fmtDur(state.left); }
+  if(showIq){ T('oiC',fmtDur(state.left)); }
   $('ovPrayer').classList.toggle('on', state.mode==='prayer');
   $('ovAdhImg').classList.toggle('on', state.mode==='adhkar' && S.adhkarStyle!=='txt');
   $('ovAdhkar').classList.toggle('on', state.mode==='adhkar' && S.adhkarStyle==='txt');
@@ -626,7 +637,7 @@ function bump(stp,d){
   if(p==='tickDays') setTimeout(refreshPrev,50);
   live();
 }
-function live(){ save(); lastRowsKey=''; applyLook(); tick(); syncAdhanSoon(); }
+function live(){ save(); lastRowsKey=''; _plans={}; for(const k in _w) delete _w[k]; applyLook(); tick(); syncAdhanSoon(); }
 /* hand the next 45 days of adhan times to the phone so it can notify even when closed */
 function syncAdhan(){
   if(!BR) return;
