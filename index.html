@@ -188,6 +188,7 @@ body{font-family:'Tajawal',system-ui,sans-serif;-webkit-font-smoothing:antialias
 #hint{position:fixed;bottom:12px;left:12px;z-index:40;background:rgba(0,0,0,.55);color:#fff;font:500 14px 'Tajawal';padding:8px 14px;border-radius:999px;transition:opacity 1s;pointer-events:none}
 #tickTrack{will-change:transform;backface-visibility:hidden}
 .num,#hm,#ss,#cd{font-variant-numeric:tabular-nums}
+.d{display:inline-block;width:var(--dw,.6em);text-align:center;font-style:normal}
 </style>
 </head>
 <body>
@@ -409,6 +410,14 @@ function renderRows(plan,nextKey){
 let sim=null; // preview simulation {mode, until}
 /* Kuwait time regardless of the device's time-zone setting: a Date whose local fields show UTC+S.tz */
 function kNow(){const d=new Date(),ms=d.getTime()+(simOffset||0);return new Date(ms+(tzOffH(ms)*60+d.getTimezoneOffset())*60000)}
+/* every digit sits in a fixed-width box, so a changing second never shifts the hours and minutes */
+function digits(x){ return String(x).replace(/\d/g,'<i class="d">$&</i>'); }
+const _dw={};
+function fixDigitWidth(){ for(const id of ['hm','ss','cd','oiC']){ const el=$(id); if(!el) continue;
+  const cs=getComputedStyle(el), key=cs.fontFamily+cs.fontWeight; let w=_dw[key];
+  if(!w){ const p=document.createElement('span'); p.style.cssText='position:absolute;visibility:hidden;white-space:nowrap;font-size:100px'; el.appendChild(p); let m=0;
+    for(let k=0;k<10;k++){ p.textContent=String(k); m=Math.max(m,p.getBoundingClientRect().width); } p.remove(); w=_dw[key]=(m/100)+'em'; }
+  el.style.setProperty('--dw',w); } }
 /* write to the screen only when something changed, so the moving ticker is never disturbed */
 const _w={};
 function _set(id,k,v,f){ const key=id+k; if(_w[key]===v) return; _w[key]=v; f($(id),v); }
@@ -445,7 +454,7 @@ function tick(){
   renderRows(today,hiKey);
   $('bottom').classList.toggle('wide', !iqm);
   if(iqm){
-    H('cdLbl','الإقامة بعد<small>Iqama after</small>'); T('cd',fmtDur(state.left)); C('cd','num iqm');
+    H('cdLbl','الإقامة بعد<small>Iqama after</small>'); H('cd',digits(fmtDur(state.left))); C('cd','num iqm');
     H('cdLbl','الإقامة بعد<small>Iqama after</small>');
     F('cd','150px');
   } else {
@@ -454,17 +463,17 @@ function tick(){
     const target = toSun? sr : next.az.getTime();
     H('cdLbl',toSun ? 'المتبقي على الشروق<small>Time to Sunrise</small>'
                                  : `المتبقي على أذان ${next.n}<small>Time to next Azan</small>`);
-    T('cd',fmtDur(target-t,true)); C('cd','num');
+    H('cd',digits(fmtDur(target-t,true))); C('cd','num');
     F('cd','172px');
   }
   // clock area: countdown for the last minute, then hold at 0
   const lastMin = (state.mode==='iqama' && state.left<=60000) || state.mode==='zero';
-  T('hm',fmtT(now)); T('ss',':'+p2(now.getSeconds())); D('ss',S.showSec?'':'none');
-  if(lastMin){ T('cd',state.mode==='zero'?'00':p2(Math.ceil(state.left/1000))); C('cd','num iqm last'); F('cd','190px'); }
+  H('hm',digits(fmtT(now))); H('ss',digits(':'+p2(now.getSeconds()))); D('ss',S.showSec?'':'none');
+  if(lastMin){ H('cd',digits(state.mode==='zero'?'00':p2(Math.ceil(state.left/1000)))); C('cd','num iqm last'); F('cd','190px'); }
   // overlays
   const showIq = state.mode==='iqama' && S.fullIqama && state.left<=60000*1 ;
   $('ovIqama').classList.toggle('on', !!showIq);
-  if(showIq){ T('oiC',fmtDur(state.left)); }
+  if(showIq){ H('oiC',digits(fmtDur(state.left))); }
   $('ovPrayer').classList.toggle('on', state.mode==='prayer');
   $('ovAdhImg').classList.toggle('on', state.mode==='adhkar' && S.adhkarStyle!=='txt');
   $('ovAdhkar').classList.toggle('on', state.mode==='adhkar' && S.adhkarStyle==='txt');
@@ -637,7 +646,7 @@ function bump(stp,d){
   if(p==='tickDays') setTimeout(refreshPrev,50);
   live();
 }
-function live(){ save(); lastRowsKey=''; _plans={}; for(const k in _w) delete _w[k]; applyLook(); tick(); syncAdhanSoon(); }
+function live(){ save(); for(const k in _dw) delete _dw[k]; setTimeout(fixDigitWidth,50); lastRowsKey=''; _plans={}; for(const k in _w) delete _w[k]; applyLook(); tick(); syncAdhanSoon(); }
 /* hand the next 45 days of adhan times to the phone so it can notify even when closed */
 function syncAdhan(){
   if(!BR) return;
@@ -744,7 +753,8 @@ addEventListener('resize',layout);
 
 applyLook(); tick(); syncAdhanSoon();
 setInterval(tick,250);
-document.fonts&&document.fonts.ready.then(()=>{fitName();buildTicker()});
+fixDigitWidth();
+document.fonts&&document.fonts.ready.then(()=>{fitName();buildTicker();for(const k in _dw) delete _dw[k];fixDigitWidth()});
 try{document.fonts.addEventListener('loadingdone',()=>fitName())}catch(e){}
 </script>
 </body>
