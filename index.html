@@ -522,7 +522,7 @@ function buildTicker(){
   tr.innerHTML=seg+seg; tr.style.direction='rtl';
   if(tickAnim) tickAnim.cancel();
   requestAnimationFrame(()=>{
-    const half=tr.scrollWidth/2; if(!half) return;
+    const half=tr.scrollWidth/2; if(!half){ setTimeout(buildTicker,1500); return; }  /* hidden (e.g. behind a card): try again shortly */
     tr.style.right='0';
     tickAnim=tr.animate([{transform:`translateX(0)`},{transform:`translateX(${half}px)`}],{duration:half/S.tickSpeed*1000,iterations:Infinity});
   });
