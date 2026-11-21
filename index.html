@@ -416,7 +416,7 @@ const _dw={};
 function fixDigitWidth(){ for(const id of ['hm','ss','cd','oiC']){ const el=$(id); if(!el) continue;
   const cs=getComputedStyle(el), key=cs.fontFamily+cs.fontWeight; let w=_dw[key];
   if(!w){ const p=document.createElement('span'); p.style.cssText='position:absolute;visibility:hidden;white-space:nowrap;font-size:100px'; el.appendChild(p); let m=0;
-    for(let k=0;k<10;k++){ p.textContent=String(k); m=Math.max(m,p.getBoundingClientRect().width); } p.remove(); w=_dw[key]=(m/100)+'em'; }
+    for(let k=0;k<10;k++){ p.textContent=String(k); m=Math.max(m,p.offsetWidth); } p.remove(); if(m<20||m>120){ el.style.removeProperty('--dw'); continue; } w=_dw[key]=(m/100)+'em'; }
   el.style.setProperty('--dw',w); } }
 /* write to the screen only when something changed, so the moving ticker is never disturbed */
 const _w={};
