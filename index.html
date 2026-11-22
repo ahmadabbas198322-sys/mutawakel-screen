@@ -192,7 +192,12 @@ body{font-family:'Tajawal',system-ui,sans-serif;-webkit-font-smoothing:antialias
 
 /* ---- reminder card (takes two thirds of the screen for a short while) ---- */
 #nextLine,#card{display:none}
-#stage.card #tbl,#stage.card #bottom,#stage.card #ticker{display:none}
+#stage.card #tbl,#stage.card:not(.iqc) #bottom,#stage.card:not(.iqc) #ticker{display:none}
+#stage.card.iqc #nextLine{display:none!important}
+#stage.card.iqc #card{margin:18px 40px 18px;padding:30px 44px}
+#stage.land.card.iqc #card{grid-area:tbl;margin:20px 30px}
+.iqc .papp{padding:26px 40px 24px}.iqc .papp .pr{height:74px;font-size:44px}.iqc .tgl{transform:scale(.85)}.iqc .papp .send{height:80px;margin-top:22px;font-size:44px}.iqc .pmsg{font-size:46px}
+#cd.blink{animation:blinkZ 1s steps(1) infinite}@keyframes blinkZ{50%{opacity:0}}
 #stage.card #nextLine{display:flex;justify-content:center;align-items:center;gap:34px;height:110px;margin:0 40px;border-radius:24px;background:var(--bar);color:var(--barInk,#fff);font-weight:700;font-size:56px;flex:none}
 #nextLine .nl{font-size:.7em;opacity:.85}
 #nextLine .num{direction:ltr}
@@ -207,9 +212,9 @@ body{font-family:'Tajawal',system-ui,sans-serif;-webkit-font-smoothing:antialias
 #card .tg b{font-weight:normal;font-family:'Amiri Quran','Amiri',serif}
 @keyframes cardIn{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:none}}
 #stage.card #top{animation:cardIn .6s ease both}
-#stage.land.card #main{grid-template-columns:760px 1fr;grid-template-rows:auto 1fr 76px;grid-template-areas:"top card" "next card" "brand card"}
-#stage.land.card #nextLine{grid-area:next;flex-direction:column;gap:8px;height:auto;align-self:center;padding:30px 20px;margin:0 30px 0 24px}
-#stage.land.card #card{grid-area:card;margin:40px 40px 40px 10px}
+#stage.land.card:not(.iqc) #main{grid-template-columns:760px 1fr;grid-template-rows:auto 1fr 76px;grid-template-areas:"top card" "next card" "brand card"}
+#stage.land.card:not(.iqc) #nextLine{grid-area:next;flex-direction:column;gap:8px;height:auto;align-self:center;padding:30px 20px;margin:0 30px 0 24px}
+#stage.land.card:not(.iqc) #card{grid-area:card;margin:40px 40px 40px 10px}
 
 /* preparation reminder (mimics the attendance app) */
 #card.prep .cb{flex-direction:column;gap:30px;font-family:inherit}
@@ -311,7 +316,7 @@ const PR = [{k:'fajr',n:'الفجر'},{k:'dhuhr',n:'الظهر'},{k:'asr',n:'ا�
 const DEF = {
  name:'جامع سعد الشلاحي', uiFont:'Tajawal', nameImgScale:100, orient:'p', nameMode:'image', nameImg:'', nameFont:'Amiri', nameSize:150, theme:'classic',
  h12:true, showSec:true, showSun:true, duha:15, rotate:0,
- tz:3, lat:29.3375, lng:47.9744, fajrAng:18, ishaAng:17.5, country:'KW', city:0, cardOn:true, cardEvery:5, cardDur:30, cardQuiet:5, prepOn:true, prepAfter:2, prepBefore:2, prepMid:true, prepJum:false, tzFix:0, zone:'Asia/Kuwait', method:'kuwait', asrH:false,
+ tz:3, lat:29.3375, lng:47.9744, fajrAng:18, ishaAng:17.5, country:'KW', city:0, cardOn:true, occIq:true, cardEvery:5, cardDur:30, cardQuiet:5, prepOn:true, prepAfter:2, prepBefore:2, prepMid:true, prepJum:false, tzFix:0, zone:'Asia/Kuwait', method:'kuwait', asrH:false,
  adj:{fajr:0,sunrise:1,dhuhr:1,asr:1,maghrib:1,isha:1},
  iq:{fajr:25,dhuhr:20,asr:25,maghrib:10,isha:10}, jumuah:40,
  pray:{fajr:10,dhuhr:10,asr:10,maghrib:8,isha:10}, jumuahPray:15,
@@ -508,7 +513,7 @@ function tick(){
   // clock area: countdown for the last minute, then hold at 0
   const lastMin = (state.mode==='iqama' && state.left<=60000) || state.mode==='zero';
   H('hm',digits(fmtT(now))); H('ss',digits(':'+p2(now.getSeconds()))); D('ss',S.showSec?'':'none');
-  if(lastMin){ H('cd',digits(state.mode==='zero'?'00':p2(Math.ceil(state.left/1000)))); C('cd','num iqm last'); F('cd','190px'); }
+  if(lastMin){ H('cd',digits(state.mode==='zero'?'00':p2(Math.ceil(state.left/1000)))); C('cd','num iqm last'+(state.mode==='zero'?' blink':'')); F('cd','190px'); }
   cardTick(state,next,t,today,inSun);
   // overlays
   const showIq = state.mode==='iqama' && S.fullIqama && state.left<=60000*1 ;
@@ -568,17 +573,48 @@ function cardItems(now,t,today){
   _cardDay=key; _cardList=list; return list;
 }
 let prepForce=0;
+function prepMarks(x){
+  const az=x.az.getTime(), iq=x.iq.getTime(), d=S.cardDur*1000, span=iq-az;
+  const m=[az+S.prepAfter*60000, iq-S.prepBefore*60000-d];
+  if(S.prepMid && span>=8*60000) m.push(az+span/2-d/2);
+  return m.filter(v=>v+d<=iq-60000);
+}
+/* occasion reminders between adhan and iqama: 3 slots that never clash with the preparation reminder */
+function occWindow(state,t){
+  if(!S.occIq || state.mode!=='iqama') return -1;
+  const x=state.x, az=x.az.getTime(), iq=x.iq.getTime(), d=S.cardDur*1000, span=iq-az;
+  const busy = (S.prepOn && !(x.jum&&!S.prepJum)) ? prepMarks(x) : [];
+  const slots=[]; for(const f of [0.2,0.35,0.5,0.65,0.8,0.12,0.28,0.42,0.58,0.72,0.88]){ const m=az+span*f-d/2;
+    if(m<az+60000 || m+d>iq-60000) continue;
+    if(busy.some(b=>m<b+d+5000 && m+d+5000>b)) continue;
+    if(slots.some(o=>Math.abs(o-m)<d+5000)) continue;
+    slots.push(m); if(slots.length===3) break; }
+  slots.sort((a,b)=>a-b);
+  const k=slots.findIndex(m=>t>=m && t<m+d);
+  return k;
+}
 function prepWindow(state,t){
   if(Date.now()<prepForce) return true;
   if(!S.prepOn || state.mode!=='iqama') return false;
   const x=state.x; if(x.jum && !S.prepJum) return false;
   const az=x.az.getTime(), iq=x.iq.getTime(), d=S.cardDur*1000, span=iq-az;
-  const marks=[az+S.prepAfter*60000, iq-S.prepBefore*60000-d];
-  if(S.prepMid && span>=8*60000) marks.push(az+span/2-d/2);
-  return marks.some(m=>t>=m && t<m+d && m+d<=iq-60000);
+  return prepMarks(x).some(m=>t>=m && t<m+d);
 }
 function cardTick(state,next,t,today,inSun){
   const real=Date.now();
+  const st0=$('stage');
+  if(state.mode==='iqama'){
+    const pw=prepWindow(state,t), ok = pw? -1 : occWindow(state,t);
+    let occ=[]; if(ok>=0) occ=occasionCards(kNow(),t,today).filter(shortOK);
+    if(pw || (ok>=0 && occ.length)){
+      st0.classList.add('card','iqc');
+      if(pw){ if(cardShownIdx!=='prep'+state.x.k){ cardShownIdx='prep'+state.x.k; showPrep(state.x,today); } }
+      else { const pi=today.list.findIndex(p=>p.k===state.x.k); const it=occ[(pi*3+ok)%occ.length], key='occ'+pi+'-'+ok;
+        if(cardShownIdx!==key){ cardShownIdx=key; showCard(it); } }
+      return;
+    }
+    if(st0.classList.contains('iqc')){ st0.classList.remove('card','iqc'); cardShownIdx=-1; setTimeout(()=>{lastRowsKey=''; if(!tickAnim||tickAnim.playState!=='running') buildTicker();},50); }
+  } else if(st0.classList.contains('iqc')){ st0.classList.remove('card','iqc'); cardShownIdx=-1; setTimeout(()=>{lastRowsKey=''; if(!tickAnim||tickAnim.playState!=='running') buildTicker();},50); }
   if(prepWindow(state,t)){
     const x = state.mode==='iqama'? state.x : (today.list.find(p=>p.az.getTime()<=t&&p.k!=='sunrise')? [...today.list].reverse().find(p=>p.az.getTime()<=t) : today.list[0]);
     const st=$('stage'); if(!st.classList.contains('card')) st.classList.add('card');
@@ -766,6 +802,7 @@ function buildSettings(){
    <div class="f"><label>مدة الأذكار (دقائق)</label>${stepper('adhkarMin',1,15,1)}</div>`)+
   sec('بطاقات التذكير',`
    <div class="f"><label>عرض بطاقة التذكير على الشاشة</label>${cyc("iCard",[['1','تشغيل'],['0','إيقاف']],S.cardOn?'1':'0')}</div>
+   <div class="f"><label>تذكيرات المناسبات بين الأذان والإقامة (3 مرات)</label>${cyc("iOccIq",[['1','تشغيل'],['0','إيقاف']],S.occIq?'1':'0')}</div>
    <div class="f"><label>تظهر كل (دقائق)</label>${stepper('cardEvery',1,30,1)}</div>
    <div class="f"><label>مدة بقائها (ثانية)</label>${stepper('cardDur',15,90,5)}</div>
    <div class="f"><label>لا تظهر قبل الأذان بـ (دقائق)</label>${stepper('cardQuiet',0,15,1)}</div>
@@ -895,6 +932,7 @@ function setField(id,v){
     const el=document.querySelector(`.cyc[data-id="${id}"] button`); if(el) el.focus(); return }
   if(t.id==='iAsr'){S.asrH=t.value==='1'; live(); return}
   if(t.id==='iCard'){S.cardOn=t.value==='1'; live(); return}
+  if(t.id==='iOccIq'){S.occIq=t.value==='1'; live(); return}
   if(t.id==='iPrep'){S.prepOn=t.value==='1'; live(); return}
   if(t.id==='iPrepM'){S.prepMid=t.value==='1'; live(); return}
   if(t.id==='iPrepJ'){S.prepJum=t.value==='1'; live(); return}
