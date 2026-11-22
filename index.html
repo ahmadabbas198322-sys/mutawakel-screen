@@ -887,7 +887,10 @@ function playAdhan(){ const a=adhanAudio(); if(!a) return; try{ a.currentTime=0;
 function stopAdhan(){ const a=adhanAudio(); if(a){ try{ a.pause(); a.currentTime=0; }catch(e){} } }
 function openSet(){ curPage=-1; buildSettings(); $('set').classList.add('on'); }
 /* back: from a page to the menu, from the menu out (TV back key calls this too) */
-function closeSet(){ if($('set').classList.contains('on') && curPage>=0){ showMenu(curPage); return; } closeAll(); }
+function closeSet(){ if(!$('set').classList.contains('on')){ endSim(); return; } if(curPage>=0){ showMenu(curPage); return; } closeAll(); }
+/* back button while a test is showing: return to the real time and normal screen */
+function endSim(){ if(!simOffset && Date.now()>=cardForce && Date.now()>=prepForce) return;
+  simOffset=0; cardForce=0; prepForce=0; cardShownIdx=-1; tick(); }
 function closeAll(){ curPage=-1; $('set').classList.remove('on'); }
 
 $('set').addEventListener('click',e=>{
@@ -957,7 +960,8 @@ function simulate(m){
 /* remote control: OK/Enter opens settings; arrows move focus inside */
 document.addEventListener('keydown',e=>{
   const open=$('set').classList.contains('on');
-  if(!open){ if(['Enter','NumpadEnter','ContextMenu','Select',' '].includes(e.key)||e.keyCode===23||e.keyCode===82){e.preventDefault();openSet()} return; }
+  if(!open){ if(e.key==='Escape'||e.key==='Backspace'||e.keyCode===4){e.preventDefault(); endSim(); return}
+    if(['Enter','NumpadEnter','ContextMenu','Select',' '].includes(e.key)||e.keyCode===23||e.keyCode===82){e.preventDefault();openSet()} return; }
   if(e.key==='Escape'||e.key==='Backspace'&&!/INPUT|TEXTAREA/.test(document.activeElement.tagName)||e.keyCode===4){e.preventDefault(); closeSet(); return}
   let k=e.key;
   const V={ArrowUp:[0,-1],ArrowDown:[0,1],ArrowLeft:[-1,0],ArrowRight:[1,0]};
