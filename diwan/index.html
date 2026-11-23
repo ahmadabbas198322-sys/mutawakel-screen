@@ -321,10 +321,10 @@ const DEF = {
  iq:{fajr:25,dhuhr:20,asr:25,maghrib:10,isha:10}, jumuah:40,
  pray:{fajr:10,dhuhr:10,asr:10,maghrib:8,isha:10}, jumuahPray:15,
  fullIqama:false, zeroMin:1, blackOn:false, adhkar:true, adhkarMin:5, adhkarStyle:'img',
- adhanNotify:null, adhanSound:true, adhanPr:{fajr:true,dhuhr:true,asr:true,maghrib:true,isha:true}, adhanInApp:false, hijriAdj:0,
+ adhanNotify:false, adhanSound:true, adhanPr:{fajr:true,dhuhr:true,asr:true,maghrib:true,isha:true}, adhanInApp:true, hijriAdj:0,
  tickSpeed:90,
  tickMode:'auto', tickDays:3, tickSrc:true,
- ticker:'نرجو إغلاق الجوال قبل الدخول في الصلاة'
+ ticker:'حيّاكم الله في ديوانيتنا\nاللهم صلِّ على محمد وعلى آل محمد'
 };
 const KEY='diwanScreen.v1';
 let S = load();
@@ -821,11 +821,18 @@ function buildSettings(){
   const cells=(obj,min,max,signed)=>PR.map(p=>`<div class="cell">${p.n}${stepperCell(obj+'.'+p.k,min,max,signed)}</div>`).join('');
   const sec=(t,body)=>`<div class="sec" data-title="${t}"><h4>${t}</h4>${body}</div>`;
   $('setBody').innerHTML=`<div id="menu"></div>`+
+  sec('القرآن والأذكار',`
+   <div class="f"><label>القارئ</label>${cyc("iRec",Object.entries(RECS).map(([k,r])=>[k,r.n+(k==='ghamdi'?' (محفوظ في الجهاز)':' (من الإنترنت)')]),S.rec)}</div>
+   <div class="f"><label>التشغيل التلقائي حسب الجدول</label>${cyc("iAutoQ",[['1','تشغيل'],['0','إيقاف']],S.autoQ?'1':'0')}</div>
+   <div class="f"><label>مستوى الصوت (%)</label>${stepper('qVol',10,100,10)}</div>
+   <div class="f"><label>تشغيل الآن</label><div class="row" style="display:flex;flex-wrap:wrap;gap:12px">${Object.entries(PL).map(([k,p])=>`<button type="button" class="btn" data-act="play:${k}">${p.n}</button>`).join('')}<button type="button" class="btn" data-act="qstop">إيقاف</button></div></div>
+   <div class="f"><label>سور الغامدي بدون إنترنت</label><button type="button" class="btn" data-act="gdl">تنزيل / تحديث</button> <output id="gdlSt">${gdlText()}</output></div>
+   <p class="note" style="opacity:.75;font-size:.8em;margin:.4em 0 0">الجدول: أذكار الصباح بعد الفجر · ${'البقرة'} بعد الشروق (والكهف يوم الجمعة) · يس بعد الظهر · أذكار المساء بعد العصر · الرحمن والواقعة بعد المغرب · قصار السور بعد العشاء. يتوقف الصوت وقت الأذان والصلاة ثم يكمل.</p>`)+
   sec('الثيم والألوان',`<div class="themes">${th}</div>`)+
   sec('اتجاه الشاشة',`
    <div class="f"><label>تصميم الشاشة</label>${cyc("iOrient",[['p','طولي'],['l','عرضي']],S.orient==='l'?'l':'p')}</div>
    <div class="f"><label>تدوير الشاشة</label>${cyc("iRot",[['0','بدون'],['90','90°'],['270','270°'],['180','180°']],String(S.rotate))}</div>`)+
-  sec('اسم الجامع والخط',`
+  sec('اسم الديوانية والخط',`
    <div class="f"><label for="iName">اسم الجامع</label><input type="text" id="iName" value="${esc(S.name)}"></div>
    <div class="f"><label>طريقة الاسم</label>${cyc("iMode",[['image','مخطوط (صورة الخط)'],['text','نص بخط من القائمة']],S.nameMode==='text'?'text':'image')}</div>
    <div class="f"><label for="iImg">إضافة مخطوطة الاسم من ملف (صورة)</label><input type="file" id="iImg" accept="image/*"></div>
@@ -849,37 +856,27 @@ function buildSettings(){
    <div class="f"><label>إظهار الثواني</label>${cyc("iSec",[['1','نعم'],['0','لا']],S.showSec?'1':'0')}</div>
    <div class="f"><label>إظهار الشروق</label>${cyc("iSun",[['1','نعم'],['0','لا']],S.showSun?'1':'0')}</div>
    <div class="f"><label>الإشراق بعد الشروق (دقائق)</label>${stepper('duha',0,30,1)}</div>`)+
-  sec('أوقات الإقامة (دقائق بعد الأذان)',`
+  sec('أوقات الإقامة (للعدّاد · دقائق بعد الأذان)',`
    <div class="grid5">${PR.map(p=>`<div class="cell">${p.n}${stepperCell('iq.'+p.k,0,60,false)}</div>`).join('')}</div>
    <div class="f"><label>إقامة الجمعة بعد الأذان</label>${stepper('jumuah',10,90,5)}</div>`)+
   sec('تعديل الأذان والتاريخ',`
    <div class="grid5">${PR.map(p=>`<div class="cell">${p.n}${stepperCell('adj.'+p.k,-30,30,true)}</div>`).join('')}</div>
    <div class="f"><label>تعديل التاريخ الهجري (يوم)</label>${stepper('hijriAdj',-2,2,1)}</div>
 `)+
-  sec('عداد الإقامة والشاشة السوداء',`
+  sec('عدّاد الإقامة ووقت الصلاة',`
    <div class="f"><label>بقاء العداد على صفر بعد الإقامة (دقائق)</label>${stepper('zeroMin',0,5,1)}</div>
-   <div class="f"><label>الشاشة السوداء بعد الإقامة</label>${cyc("iBlack",[['1','تشغيل'],['0','إيقاف']],S.blackOn?'1':'0')}</div>
-   <div class="f"><label>مدة الشاشة السوداء لكل صلاة (دقائق)</label></div>
+   <div class="f"><label>مدة الصلاة لكل فرض — يتوقف فيها صوت القرآن (دقائق)</label></div>
    <div class="grid5">${PR.map(p=>`<div class="cell">${p.n}${stepperCell('pray.'+p.k,0,40,false)}</div>`).join('')}</div>
-   <div class="f"><label>مدة الشاشة السوداء للجمعة (دقائق)</label>${stepper('jumuahPray',0,60,5)}</div>`)+
-  sec('الأذان والتنبيه',`
-   <div class="f"><label>إشعار الأذان على الجوال${BR?'':' (في تطبيق الأندرويد فقط)'}</label>${cyc("iAN",[['1','تشغيل'],['0','إيقاف']],S.adhanNotify?'1':'0')}</div>
-   <div class="f"><label>صوت الإشعار</label>${cyc("iAS",[['1','صوت الأذان'],['0','بدون صوت']],S.adhanSound?'1':'0')}</div>
-   <div class="f"><label>الصلوات اللي يطلع لها أذان</label></div>
-   <div class="grid5">${PR.map(p=>`<div class="cell">${p.n}${cyc('iAP_'+p.k,[['1','نعم'],['0','لا']],S.adhanPr[p.k]!==false?'1':'0')}</div>`).join('')}</div>
+   <div class="f"><label>مدة صلاة الجمعة (دقائق)</label>${stepper('jumuahPray',0,60,5)}</div>`)+
+  sec('صوت الأذان',`
    <div class="f"><label>تشغيل الأذان من سماعة الشاشة</label>${cyc("iAI",[['1','تشغيل'],['0','إيقاف']],S.adhanInApp?'1':'0')}</div>
-   <div class="btns"><button class="btn" data-adh="notif">تجربة الإشعار</button><button class="btn" data-adh="play">تجربة صوت الأذان</button><button class="btn" data-adh="stop">إيقاف الصوت</button></div>`)+
+   <div class="f"><label>الصلوات اللي يتشغّل لها الأذان</label></div>
+   <div class="grid5">${PR.map(p=>`<div class="cell">${p.n}${cyc('iAP_'+p.k,[['1','نعم'],['0','لا']],S.adhanPr[p.k]!==false?'1':'0')}</div>`).join('')}</div>
+   <div class="btns"><button class="btn" data-adh="play">تجربة صوت الأذان</button><button class="btn" data-adh="stop">إيقاف الأذان</button></div>`)+
   sec('الأذكار بعد الصلاة',`
    <div class="f"><label>أذكار بعد الصلاة</label>${cyc("iAdh",[['1','نعم'],['0','لا']],S.adhkar?'1':'0')}</div>
    <div class="f"><label>شكل شاشة الأذكار</label>${cyc("iAdhS",[['img','لوحة الأذكار'],['txt','نص مختصر']],S.adhkarStyle==='txt'?'txt':'img')}</div>
    <div class="f"><label>مدة الأذكار (دقائق)</label>${stepper('adhkarMin',1,15,1)}</div>`)+
-  sec('القرآن والأذكار',`
-   <div class="f"><label>القارئ</label>${cyc("iRec",Object.entries(RECS).map(([k,r])=>[k,r.n+(k==='ghamdi'?' (محفوظ في الجهاز)':' (من الإنترنت)')]),S.rec)}</div>
-   <div class="f"><label>التشغيل التلقائي حسب الجدول</label>${cyc("iAutoQ",[['1','تشغيل'],['0','إيقاف']],S.autoQ?'1':'0')}</div>
-   <div class="f"><label>مستوى الصوت (%)</label>${stepper('qVol',10,100,10)}</div>
-   <div class="f"><label>تشغيل الآن</label><div class="row" style="display:flex;flex-wrap:wrap;gap:12px">${Object.entries(PL).map(([k,p])=>`<button type="button" class="btn" data-act="play:${k}">${p.n}</button>`).join('')}<button type="button" class="btn" data-act="qstop">إيقاف</button></div></div>
-   <div class="f"><label>سور الغامدي بدون إنترنت</label><button type="button" class="btn" data-act="gdl">تنزيل / تحديث</button> <output id="gdlSt">${gdlText()}</output></div>
-   <p class="note" style="opacity:.75;font-size:.8em;margin:.4em 0 0">الجدول: أذكار الصباح بعد الفجر · ${'البقرة'} بعد الشروق (والكهف يوم الجمعة) · يس بعد الظهر · أذكار المساء بعد العصر · الرحمن والواقعة بعد المغرب · قصار السور بعد العشاء. يتوقف الصوت وقت الأذان والصلاة ثم يكمل.</p>`)+
   sec('بطاقات التذكير',`
    <div class="f"><label>عرض بطاقة التذكير على الشاشة</label>${cyc("iCard",[['1','تشغيل'],['0','إيقاف']],S.cardOn?'1':'0')}</div>
    <div class="f"><label>تذكيرات المناسبات بين الأذان والإقامة (3 مرات)</label>${cyc("iOccIq",[['1','تشغيل'],['0','إيقاف']],S.occIq?'1':'0')}</div>
@@ -899,7 +896,6 @@ function buildSettings(){
     <button class="btn" data-sim="iqama">عداد الإقامة</button>
     <button class="btn" data-sim="last">آخر دقيقة</button>
     <button class="btn" data-sim="zero">الصفر</button>
-    <button class="btn" data-sim="prayer">الشاشة السوداء</button>
     <button class="btn" data-sim="adhkar">الأذكار</button>
     <button class="btn" data-sim="off">الوقت الحقيقي</button>
    </div>`)+
