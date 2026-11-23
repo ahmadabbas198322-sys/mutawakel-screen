@@ -152,6 +152,9 @@ body{font-family:'Tajawal',system-ui,sans-serif;-webkit-font-smoothing:antialias
 #setHead{display:flex;align-items:center;justify-content:space-between;padding:16px 22px;background:#14203f;color:#fff}
 #setHead h3{font-size:22px}
 #setBody{overflow:auto;padding:8px 22px 22px}
+.scr{max-height:52vh;overflow:auto;border-radius:10px;scroll-behavior:smooth}
+.scr .imsak th{position:sticky;top:0}
+.scrHint{font-size:13px;color:#64748b;margin-top:6px}
 .sec{margin-top:18px}
 .mi{display:flex;align-items:center;justify-content:space-between;width:100%;font:700 19px 'Tajawal';color:#14203f;background:#f4f6fb;border:0;border-radius:14px;padding:16px 18px;margin:8px 0;cursor:pointer;text-align:right}
 .mi b{font-size:24px;color:#8a93ad}
@@ -226,10 +229,10 @@ body{font-family:'Tajawal',system-ui,sans-serif;-webkit-font-smoothing:antialias
 
 #np{display:none;align-items:center;justify-content:center;gap:18px;height:74px;margin:0 40px 10px;border-radius:40px;background:var(--bar);color:var(--barInk,#fff);font-size:40px;font-weight:700;flex:none}
 #nightDim{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none;transition:opacity 2s;z-index:50}#np.on{display:flex}
-#card .wl{font-family:var(--uiFont,'Tajawal'),sans-serif;font-weight:900;color:var(--azan);font-size:1.35em;line-height:1.3}#card .wls{font-size:.6em;opacity:.8;margin-top:.4em}#card .taf{font-family:'Amiri',serif;font-size:.5em;line-height:1.7;margin-top:.7em;opacity:.9}#card .big{font-family:var(--uiFont,'Tajawal'),sans-serif;font-weight:900;font-size:2.4em;color:var(--azan);line-height:1.1}#stage.npon #brandRow{display:none}#np .eq{display:inline-flex;gap:5px;align-items:flex-end;height:34px}#np .eq i{width:7px;background:currentColor;border-radius:3px;animation:eqA 1s ease-in-out infinite}
+#card .wl{font-family:var(--uiFont,'Tajawal'),sans-serif;font-weight:900;color:var(--azan);font-size:1.35em;line-height:1.3}#card .wls{font-size:.6em;opacity:.8;margin-top:.4em}#card .taf{font-family:'Amiri',serif;font-size:.5em;line-height:1.7;margin-top:.7em;opacity:.9}#card .big{font-family:var(--uiFont,'Tajawal'),sans-serif;font-weight:900;font-size:2.4em;color:var(--azan);line-height:1.1}#brandRow{gap:18px}#brand{flex:none}#np{flex:1 1 auto;min-width:0;margin:0!important;height:56px!important;font-size:28px!important;gap:12px!important;padding:0 20px;white-space:nowrap;overflow:hidden}#np>span{overflow:hidden;text-overflow:ellipsis}#np .rc{flex:0 1 auto}#np>span:not(.rc){flex:none}#stage.land #np .rc{display:none}#np .eq{display:inline-flex;gap:5px;align-items:flex-end;height:34px}#np .eq i{width:7px;background:currentColor;border-radius:3px;animation:eqA 1s ease-in-out infinite}
 #np .eq i:nth-child(2){animation-delay:.2s}#np .eq i:nth-child(3){animation-delay:.4s}@keyframes eqA{0%,100%{height:8px}50%{height:34px}}
 #np .rc{opacity:.8;font-weight:500;font-size:.85em}
-#stage.land #np{grid-area:brand;margin:0 30px 0 0;height:60px;font-size:32px}
+
 #card .dkn{display:inline-block;margin-top:.5em;padding:4px 26px;border-radius:30px;background:var(--bar);color:var(--barInk,#fff);font-family:var(--uiFont,'Tajawal'),sans-serif;font-weight:800;font-size:.55em}
 .imsak{width:100%;border-collapse:collapse;font-size:15px;margin-top:10px}.imsak th,.imsak td{border:1px solid #d6dbe8;padding:5px 6px;text-align:center}.imsak th{background:#1c3a7a;color:#fff}
 .mi.qstopmi{background:#b3261e!important;color:#fff!important}.mi.qstopmi span{font-weight:800}
@@ -270,8 +273,8 @@ body{font-family:'Tajawal',system-ui,sans-serif;-webkit-font-smoothing:antialias
    <div id="brandRow">
     <!-- BRAND: change brand.png and the phone number here -->
     <div id="brand"><span class="blogo" role="img" aria-label="شاشات المتوكل"></span><span class="ph"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.6a1 1 0 0 1-.25 1z" fill="currentColor"/></svg>97972234</span></div>
+    <div id="np"></div>
    </div>
-   <div id="np"></div>
    <div id="nightDim"></div>
    <div id="toast"></div>
    <div id="ticker"><div id="tickTrack"></div></div>
@@ -404,6 +407,7 @@ function applyLook(){
   const th=THEMES[S.theme]||THEMES.classic, st=$('stage').style;
   for(const k in th.v) st.setProperty('--'+k,th.v[k]);
   $('stage').classList.toggle('land',S.orient==='l');
+  { const src=S.orient==='l'?'adhkar-l.jpg':'adhkar.jpg'; document.querySelectorAll('#ovAdhImg img').forEach(im=>{ if(im.getAttribute('src')!==src) im.setAttribute('src',src); }); }
   $('stage').style.fontFamily="'"+(S.uiFont||'Tajawal')+"', 'Tajawal', sans-serif";
   st.setProperty('--sepA',hexA(th.v.line,.24)); st.setProperty('--sepB',hexA(th.v.line,.15));
   st.setProperty('--pat',PAT);
@@ -664,7 +668,7 @@ function imsakiya(){ const now=kNow(); let st=null; for(let k=-30;k<400;k++){ co
   if(st===null) return '';
   let rows=''; for(let k=st;k<st+30;k++){ const x=new Date(now.getFullYear(),now.getMonth(),now.getDate()+k,12), h=hijri(x); if(!h||h.m!==9) break; const p=planFor(x), fj=p.list[0].az, mg=p.list.find(q=>q.k==='maghrib').az;
     rows+=`<tr><td>${h.d}</td><td>${x.getDate()}/${x.getMonth()+1}</td><td>${fmtT(new Date(fj.getTime()-(S.imsak||10)*60000))}</td><td>${fmtT(fj)}</td><td>${fmtT(mg)}</td><td>${fmtT(p.list.find(q=>q.k==='isha').az)}</td></tr>`; }
-  return `<table class="imsak"><tr><th>رمضان</th><th>التاريخ</th><th>الإمساك</th><th>الفجر</th><th>المغرب (الإفطار)</th><th>العشاء</th></tr>${rows}</table>`; }
+  return `<div class="scr" tabindex="0" aria-label="جدول الإمساكية — استخدم الأسهم للتمرير"><table class="imsak"><tr><th>رمضان</th><th>التاريخ</th><th>الإمساك</th><th>الفجر</th><th>المغرب (الإفطار)</th><th>العشاء</th></tr>${rows}</table></div><div class="scrHint">انزل بالسهم على الجدول ثم استمر بالسهم للتمرير</div>`; }
 
 /* ---------- reminder card ---------- */
 let cardForce=0, cardShownIdx=-1;
@@ -1137,7 +1141,9 @@ document.addEventListener('keydown',e=>{
   if(stp&&(k==='ArrowLeft'||k==='ArrowRight')){e.preventDefault();const d=k==='ArrowLeft'?-1:1;stp.classList.contains('cyc')?cycle(stp,d):bump(stp,d);return}
   if(V[k]){
     if(a.tagName==='TEXTAREA'||(a.tagName==='INPUT'&&(k==='ArrowLeft'||k==='ArrowRight'))) return;
-    const f=[...$('setBox').querySelectorAll('button,input,textarea')].filter(el=>el.offsetParent&&!(el.closest('.stp')&&el!==el.closest('.stp').querySelector('button')));
+    const f=[...$('setBox').querySelectorAll('button,input,textarea,.scr')].filter(el=>el.offsetParent&&!(el.closest('.stp')&&el!==el.closest('.stp').querySelector('button')));
+    if(a.classList&&a.classList.contains('scr')&&(k==='ArrowDown'||k==='ArrowUp')){ const dn=k==='ArrowDown', st=a.scrollTop, mx=a.scrollHeight-a.clientHeight;
+      if(dn?st<mx-2:st>2){ e.preventDefault(); a.scrollTop=st+(dn?1:-1)*Math.max(80,a.clientHeight*.6); return; } }
     const cur=stp?stp.querySelector('button'):a; const i=f.indexOf(cur);
     const n=f[Math.max(0,Math.min(f.length-1,i+((k==='ArrowDown'||k==='ArrowLeft')?1:-1)))];
     if(n){e.preventDefault();n.focus();n.scrollIntoView({block:'nearest'})}
