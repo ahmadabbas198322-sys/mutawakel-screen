@@ -232,6 +232,8 @@ body{font-family:'Tajawal',system-ui,sans-serif;-webkit-font-smoothing:antialias
 #stage.land #np{grid-area:brand;margin:0 30px 0 0;height:60px;font-size:32px}
 #card .dkn{display:inline-block;margin-top:.5em;padding:4px 26px;border-radius:30px;background:var(--bar);color:var(--barInk,#fff);font-family:var(--uiFont,'Tajawal'),sans-serif;font-weight:800;font-size:.55em}
 .imsak{width:100%;border-collapse:collapse;font-size:15px;margin-top:10px}.imsak th,.imsak td{border:1px solid #d6dbe8;padding:5px 6px;text-align:center}.imsak th{background:#1c3a7a;color:#fff}
+.mi.qstopmi{background:#b3261e!important;color:#fff!important}.mi.qstopmi span{font-weight:800}
+#toast{position:absolute;left:50%;bottom:140px;transform:translateX(-50%);background:rgba(0,0,0,.8);color:#fff;font-size:40px;padding:18px 40px;border-radius:40px;opacity:0;transition:opacity .4s;z-index:60;pointer-events:none}#toast.on{opacity:1}
 </style>
 </head>
 <body>
@@ -271,6 +273,7 @@ body{font-family:'Tajawal',system-ui,sans-serif;-webkit-font-smoothing:antialias
    </div>
    <div id="np"></div>
    <div id="nightDim"></div>
+   <div id="toast"></div>
    <div id="ticker"><div id="tickTrack"></div></div>
   </div>
   <div class="ov" id="ovIqama"><div class="t" id="oiT">الإقامة بعد</div><div class="c num" id="oiC">00:00</div><div class="p">أغلق الجوال · سوّوا الصفوف</div></div>
@@ -982,7 +985,7 @@ function buildSettings(){
    </div>`)+
   `<div class="btns" id="menuBtns" style="margin-top:22px"><button class="btn pri" id="saveBtn">حفظ وإغلاق</button><button class="btn" id="resetBtn">استرجاع الافتراضي</button></div>`;
   const secs=[...$('setBody').querySelectorAll('.sec')];
-  $('menu').innerHTML=secs.map((x,i)=>`<button type="button" class="mi" data-page="${i}"><span>${x.dataset.title}</span><b>‹</b></button>`).join('');
+  $('menu').innerHTML=((Q||DK)?`<button type="button" class="mi qstopmi" data-act="qstop"><span>⏹ إيقاف التلاوة</span><b></b></button>`:'')+secs.map((x,i)=>`<button type="button" class="mi" data-page="${i}"><span>${x.dataset.title}</span><b>‹</b></button>`).join('');
   secs.forEach(x=>{x.querySelector('h4').outerHTML=`<div class="pgHead"><button type="button" class="btn back">› رجوع للقائمة</button></div>`});
   showMenu(curPage);
 }
@@ -1039,7 +1042,8 @@ function openSet(){ curPage=-1; buildSettings(); $('set').classList.add('on'); }
 /* back: from a page to the menu, from the menu out (TV back key calls this too) */
 function closeSet(){ if(!$('set').classList.contains('on')){ endSim(); return; } if(curPage>=0){ showMenu(curPage); return; } closeAll(); }
 /* back button while a test is showing: return to the real time and normal screen */
-function endSim(){ if(!simOffset && Date.now()>=cardForce && Date.now()>=prepForce) return;
+function toast(m){ const t=$('toast'); if(!t) return; t.textContent=m; t.classList.add('on'); clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove('on'),2500); }
+function endSim(){ if(!simOffset && Date.now()>=cardForce && Date.now()>=prepForce){ if(Q||DK){ qStop(); toast('تم إيقاف التلاوة'); } return; }
   simOffset=0; cardForce=0; prepForce=0; cardShownIdx=-1; tick(); }
 function closeAll(){ curPage=-1; $('set').classList.remove('on'); }
 
@@ -1119,6 +1123,9 @@ function simulate(m){
 /* remote control: OK/Enter opens settings; arrows move focus inside */
 document.addEventListener('keydown',e=>{
   const open=$('set').classList.contains('on');
+  if(['MediaPlayPause','MediaPause','MediaStop','MediaPlay'].includes(e.key)||[85,86,126,127].includes(e.keyCode)){ e.preventDefault();
+    if(QA&&Q){ if(QA.paused&&!qHeld){ try{QA.play().catch(()=>{})}catch(_){} toast('تشغيل'); } else if(e.key==='MediaStop'||e.keyCode===86){ qStop(); toast('تم إيقاف التلاوة'); } else { QA.pause(); toast('إيقاف مؤقت'); } }
+    else if(DK){ qStop(); toast('تم إيقاف الأذكار'); } return; }
   if(!open){ if(e.key==='Escape'||e.key==='Backspace'||e.keyCode===4){e.preventDefault(); endSim(); return}
     if(['Enter','NumpadEnter','ContextMenu','Select',' '].includes(e.key)||e.keyCode===23||e.keyCode===82){e.preventDefault();openSet()} return; }
   if(e.key==='Escape'||e.key==='Backspace'&&!/INPUT|TEXTAREA/.test(document.activeElement.tagName)||e.keyCode===4){e.preventDefault(); closeSet(); return}
