@@ -903,7 +903,7 @@ function buildSettings(){
    <div class="f"><label>تصميم الشاشة</label>${cyc("iOrient",[['p','طولي'],['l','عرضي']],S.orient==='l'?'l':'p')}</div>
    <div class="f"><label>تدوير الشاشة</label>${cyc("iRot",[['0','بدون'],['90','90°'],['270','270°'],['180','180°']],String(S.rotate))}</div>`)+
   sec('اسم الديوانية والخط',`
-   <div class="f"><label for="iName">اسم الجامع</label><input type="text" id="iName" value="${esc(S.name)}"></div>
+   <div class="f"><label for="iName">اسم الديوانية</label><input type="text" id="iName" value="${esc(S.name)}"></div>
    <div class="f"><label>طريقة الاسم</label>${cyc("iMode",[['image','مخطوط (صورة الخط)'],['text','نص بخط من القائمة']],S.nameMode==='text'?'text':'image')}</div>
    <div class="f"><label for="iImg">إضافة مخطوطة الاسم من ملف (صورة)</label><input type="file" id="iImg" accept="image/*"></div>
    <div class="f"><label>حجم المخطوطة (%)</label>${stepper('nameImgScale',40,130,5)}</div>
