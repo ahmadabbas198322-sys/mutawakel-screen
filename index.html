@@ -335,6 +335,39 @@ const KEY='mosqueScreen.v3';
 let S = load();
 /* native bridge (Android app only) */
 const BR = window.AndroidBridge || null;
+/* ===== clock: internal timer + network sync + manual seconds =====
+   - internal timer: once started, time runs on the device's monotonic counter, so a sudden backward/forward step
+     in the TV's wall clock (e.g. when the internet drops) does not move the screen.
+   - network sync: whenever internet is available the true time is fetched (every 30 min, retry every 5 min)
+     and the internal timer is re-anchored to it.
+   - manual seconds: used only while there has been no network sync since the app started. */
+const CLK=(function(){
+  let A={t:Date.now(),p:performance.now()}, src='sys', lastNet=0, lastDiff=null, lastTry=0, lastOk=false;
+  try{ const j=JSON.parse(localStorage.getItem('clk')||'null'); if(j){ lastNet=j.lastNet||0; lastDiff=(j.diff==null?null:j.diff); } }catch(e){}
+  const raw=()=>A.t+(performance.now()-A.p);
+  function guard(){ const d=Date.now()-raw();
+    /* big jump (manual change of TV time, or the device slept): follow the TV clock again */
+    if(Math.abs(d)>120000){ A={t:Date.now(),p:performance.now()}; src='sys'; } }
+  function now(){ guard(); return raw()+(src==='net'?0:(+S.secFix||0)*1000); }
+  function sync(manual){ lastTry=Date.now(); if(!BR||!BR.netTime){ lastOk=false; return false; }
+    let v=''; const p0=performance.now(); try{ v=String(BR.netTime()||''); }catch(e){ v=''; } const p1=performance.now();
+    let t=NaN; if(v[0]==='D') t=+v.slice(1)+500; else if(/^\d{9,}(\.\d+)?$/.test(v.trim())) t=parseFloat(v)*1000;
+    if(!isFinite(t)||t<1.6e12){ lastOk=false; return false; }
+    const mid=(p0+p1)/2; A={t:t,p:mid}; src='net'; lastNet=Date.now(); lastOk=true;
+    lastDiff=(t+(performance.now()-mid))-Date.now(); /* true time − TV clock, in ms */
+    try{ localStorage.setItem('clk',JSON.stringify({lastNet,diff:lastDiff})); }catch(e){}
+    return true; }
+  function loop(){ const ok=sync(); setTimeout(loop, ok?30*60000:5*60000); }
+  setTimeout(loop, 4000);
+  function status(){ const ago=lastNet?Math.round((Date.now()-lastNet)/60000):null;
+    const fmt=m=>m<1?'الآن':m<60?('قبل '+m+' دقيقة'):m<1440?('قبل '+Math.round(m/60)+' ساعة'):('قبل '+Math.round(m/1440)+' يوم');
+    const diff=lastDiff==null?'':(' · ساعة التلفزيون '+(lastDiff>0?'متأخرة ':'متقدمة ')+Math.abs(lastDiff/1000).toFixed(1)+' ثانية');
+    if(src==='net') return 'مضبوط من الإنترنت '+fmt(ago)+diff;
+    if(!BR||!BR.netTime) return 'الضبط من الإنترنت متاح في تطبيق التلفزيون فقط';
+    return 'ما فيه ضبط من الإنترنت حالياً — يمشي على ساعة التلفزيون'+((+S.secFix)?' مع التعديل اليدوي':'')+(lastNet?(' · آخر ضبط '+fmt(ago)):'')+diff; }
+  return {now, sync, status, src:()=>src, corr:()=>now()-Date.now()};
+})();
+
 function brIsTv(){ try{ return !!(BR && BR.isTv()); }catch(e){ return false; } }
 if(S.adhanNotify==null) S.adhanNotify = !!BR && !brIsTv();
 let FIRST=false; try{FIRST=!localStorage.getItem(KEY)}catch(e){}
@@ -458,7 +491,7 @@ function renderRows(plan,nextKey){
 }
 let sim=null; // preview simulation {mode, until}
 /* Kuwait time regardless of the device's time-zone setting: a Date whose local fields show UTC+S.tz */
-function kNow(){const d=new Date(),ms=d.getTime()+(simOffset||0);return new Date(ms+(tzOffH(ms)*60+d.getTimezoneOffset())*60000)}
+function kNow(){const m0=CLK.now(),d=new Date(m0),ms=m0+(simOffset||0);return new Date(ms+(tzOffH(ms)*60+d.getTimezoneOffset())*60000)}
 /* every digit sits in a fixed-width box, so a changing second never shifts the hours and minutes */
 function digits(x){ return String(x).replace(/\d/g,'<i class="d">$&</i>'); }
 const _dw={};
@@ -777,6 +810,11 @@ function buildSettings(){
    <div class="f"><label>تصحيح فرق التوقيت (ساعة) — فقط إذا كانت ساعة الجهاز قديمة</label>${stepper('tzFix',-2,2,1)}</div>
    <p class="note" style="opacity:.75;font-size:.8em;margin:.4em 0 0">التوقيت الصيفي يتعدّل تلقائيًا. إذا اختلف وقت عن التقويم الرسمي في بلدك بدقيقة أو دقيقتين، عدّله من «تعديل الأذان».</p>`)+
   sec('الساعة والشروق',`
+   <div class="f"><label>ضبط الثواني</label><output id="clkSt" style="flex:1">${CLK.status()}</output></div>
+   <div class="f"><label></label><button type="button" class="btn" data-act="clkSync">ضبط الآن من الإنترنت</button></div>
+   <div class="f"><label>تعديل يدوي (ثانية)</label><button type="button" class="btn" data-act="sec+">+</button><output id="secV" style="min-width:3em;text-align:center;direction:ltr">${(+S.secFix||0)>0?'+':''}${+S.secFix||0}</output><button type="button" class="btn" data-act="sec-">−</button></div>
+   <p class="note" style="opacity:.75;font-size:.8em;margin:.2em 0 .6em">التعديل اليدوي يشتغل بس إذا الشاشة ما قدرت تضبط وقتها من الإنترنت. اضغط + إذا الشاشة متأخرة، و − إذا متقدمة.</p>
+
    <div class="f"><label>نظام الساعة</label>${cyc("iH12",[['1','١٢ ساعة'],['0','٢٤ ساعة']],S.h12?'1':'0')}</div>
    <div class="f"><label>إظهار الثواني</label>${cyc("iSec",[['1','نعم'],['0','لا']],S.showSec?'1':'0')}</div>
    <div class="f"><label>إظهار الشروق</label>${cyc("iSun",[['1','نعم'],['0','لا']],S.showSun?'1':'0')}</div>
@@ -879,7 +917,7 @@ function syncAdhan(){
     const d0=new Date(), fix=(tzOffH(d0.getTime())*60+d0.getTimezoneOffset())*60000, f=new Date(d0.getTime()+fix);
     for(let d=0; d<45; d++){
       const day=new Date(f.getFullYear(),f.getMonth(),f.getDate()+d,12);
-      for(const x of dayPlan(day).list){ if(S.adhanPr[x.k]!==false) items.push({t:x.az.getTime()-fix, n:x.n}); }
+      for(const x of dayPlan(day).list){ if(S.adhanPr[x.k]!==false) items.push({t:x.az.getTime()-fix-CLK.corr(), n:x.n}); }
     }
   }
   try{ BR.schedule(JSON.stringify({items, sound:!!S.adhanSound})); }catch(e){}
@@ -906,6 +944,8 @@ $('set').addEventListener('click',e=>{
   if(b.dataset.c){cycle(b.closest('.stp'),+b.dataset.c);return}
   if(b.dataset.theme){S.theme=b.dataset.theme;document.querySelectorAll('.th').forEach(x=>x.classList.toggle('sel',x===b));live();return}
   if(b.dataset.act==='prepNow'){prepForce=Date.now()+S.cardDur*1000;cardShownIdx=-1;closeAll();tick();return}
+  if(b.dataset.act==='clkSync'){ const ok=CLK.sync(true); const o=$('clkSt'); if(o) o.textContent=CLK.status(); (typeof toast==='function')&&toast(ok?'تم ضبط الوقت من الإنترنت':'ما قدرت أوصل للإنترنت'); return }
+  if(b.dataset.act==='sec+'||b.dataset.act==='sec-'){ S.secFix=Math.max(-120,Math.min(120,(+S.secFix||0)+(b.dataset.act==='sec+'?1:-1))); save(); const o=$('secV'); if(o) o.textContent=(S.secFix>0?'+':'')+S.secFix; const st=$('clkSt'); if(st) st.textContent=CLK.status(); tick(); return }
   if(b.dataset.act==='cardNow'){cardForce=Date.now()+S.cardDur*1000;cardShownIdx=-1;closeAll();tick();return}
   if(b.dataset.act==='resetImg'){S.nameImg='';S.nameImgScale=100;live();buildSettings();showPage(curPage);return}
   if(b.dataset.sim){simulate(b.dataset.sim);closeAll();return}
