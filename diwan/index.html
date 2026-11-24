@@ -17,6 +17,7 @@
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{width:100%;height:100%;background:#000;overflow:hidden}
+html:not(.ready) #stage{visibility:hidden}
 body{font-family:'Tajawal',system-ui,sans-serif;-webkit-font-smoothing:antialiased;cursor:default;user-select:none}
 #viewport{position:fixed;top:0;right:0;bottom:0;left:0;display:flex;align-items:center;justify-content:center;overflow:hidden}
 #stage{position:absolute;left:50%;top:50%;width:1080px;height:1920px;transform-origin:center center;
@@ -253,7 +254,7 @@ body{font-family:'Tajawal',system-ui,sans-serif;-webkit-font-smoothing:antialias
  <div id="stage">
   <div class="layer" id="main">
    <div id="top">
-   <div id="name"><div id="nameImg"></div><div id="nameTxt">جامع سعد الشلاحي</div></div>
+   <div id="name"><div id="nameImg"></div><div id="nameTxt"></div></div>
    <div id="clock"><span class="hm num" id="hm">--:--</span><span class="s num" id="ss">:--</span></div>
    <div id="dates"><div class="dl"><div id="hij"></div><div id="greg"></div></div><span class="day" id="dayName"></span></div>
    </div>
@@ -1280,6 +1281,10 @@ setInterval(tick,250);
 fixDigitWidth();
 document.fonts&&document.fonts.ready.then(()=>{fitName();buildTicker();for(const k in _dw) delete _dw[k];fixDigitWidth()});
 try{document.fonts.addEventListener('loadingdone',()=>fitName())}catch(e){}
+</script>
+<script>/* show the screen only once it is laid out and its fonts are loaded (no flash of raw text at startup) */
+(function(){ const go=()=>requestAnimationFrame(()=>requestAnimationFrame(()=>document.documentElement.classList.add('ready')));
+  const f=(document.fonts&&document.fonts.ready)||Promise.resolve(); Promise.race([f,new Promise(r=>setTimeout(r,2500))]).then(go,go); setTimeout(go,4000); })();
 </script>
 </body>
 </html>
