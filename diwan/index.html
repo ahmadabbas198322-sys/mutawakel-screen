@@ -609,9 +609,10 @@ function qStop(){ Q=null; DK=null; if(DKA){ try{DKA.pause()}catch(e){} DKA.remov
 function qPlay(key){ const p=PL[key]; if(!p) return; qStop();
   if(p.d){ DK={key, d:p.d, list:ADHKAR[p.d], i:0, until:0}; dkShow(); npShow(); return; }
   Q={key, list:p.s.slice(), i:0}; qLoad(); }
+let qHeld=false;
 function npShow(){ const el=$('np'); if(!el) return;
-  let h=''; if(Q){ const n=Q.list[Q.i]; h=`<span class="eq"><i></i><i></i><i></i></span><span>سورة ${SN[n]||n}</span><span class="rc">${Q.err?'تعذّر التشغيل — تأكد من الإنترنت':(RECS[S.rec]||RECS.ghamdi).n}</span>`; }
-  else if(DK) h=`<span class="eq"><i></i><i></i><i></i></span><span>${PL[DK.key].n}</span><span class="rc">${DK.i+1} / ${DK.list.length}</span>`;
+  let h=''; if(Q){ const n=Q.list[Q.i]; h=`<span class="eq"><i></i><i></i><i></i></span><span>سورة ${SN[n]||n}</span><span class="rc">${qHeld?'متوقف لوقت الصلاة · يكمل بعدها':Q.err?'تعذّر التشغيل — تأكد من الإنترنت':(Q.radio?'':(RECS[S.rec]||RECS.ghamdi).n)}</span>`; }
+  else if(DK) h=`<span class="eq"><i></i><i></i><i></i></span><span>${PL[DK.key].n}</span><span class="rc">${DK.held?'متوقف لوقت الصلاة':(DK.i+1)+' / '+DK.list.length}</span>`;
   el.innerHTML=h; el.classList.toggle('on',!!h); $('stage').classList.toggle('npon',!!h); }
 /* adhkar shown one by one on the screen */
 function dkDur(it){ const len = it.t==='q'&&it.g ? it.g.reduce((n,r)=>n+r[1].split(' ').length,0)*7 : (it.x||'').length; return Math.max(12, Math.min(45, len*0.11)) * 1000 + ((it.n||1)>1?5000:0); }
@@ -636,14 +637,15 @@ function dkShow(){ if(!DK) return; const it=DK.list[DK.i];
 function dkTick(next,t,today,inSun){ if(!DK) return false;
   if(next){ const nextAz = inSun? today.sunrise.getTime() : next.az.getTime(); H('nextLine',`<span>${inSun?'الشروق':next.n}</span><span class="num">${fmtT(new Date(nextAz))}</span><span class="nl">المتبقي</span><span class="num">${digits(fmtDur(nextAz-t,true))}</span>`); } if(Date.now()>=DK.until){ DK.i++; if(DK.i>=DK.list.length){ DK=null; qStop(); return false; } dkShow(); } return true; }
 /* pause during adhan and prayer, then continue */
-let qHeld=false;
+
 function qQuiet(state,t,next,today){ const nextAz=next&&next.az?next.az.getTime():0;
   const inPray = today && today.list.some(p=>p.k!=='sunrise' && p.iq && t>=p.iq.getTime() && t<p.iq.getTime()+((p.jum?S.jumuahPray:S.pray[p.k])||10)*60000);
   const near = nextAz && nextAz-t < 60000 && nextAz-t > 0;
   const sx = state.x && state.x.k==='sunrise';
   const hold = near || inPray || (!sx && (state.mode==='iqama' || state.mode==='zero')) || state.mode==='prayer' || state.mode==='adhkar';
-  if(DKA && DK){ if(hold && !DKA.paused){ DKA.pause(); DK.held=true; } else if(!hold && DK.held){ DK.held=false; try{DKA.play().catch(()=>{})}catch(e){} } }
-  if(QA && Q){ if(hold && !QA.paused){ QA.pause(); qHeld=true; } else if(!hold && qHeld){ qHeld=false; try{QA.play().catch(()=>{})}catch(e){} } }
+  if(DKA && DK){ if(hold && !DKA.paused){ DKA.pause(); DK.held=true; npShow(); } else if(!hold && DK.held){ DK.held=false; try{DKA.play().catch(()=>{})}catch(e){} npShow(); } }
+  if(QA && Q){ if(hold && !QA.paused){ QA.pause(); qHeld=true; npShow(); } else if(!hold && qHeld){ qHeld=false; try{QA.play().catch(()=>{})}catch(e){} npShow(); } }
+  if(!Q && qHeld){ qHeld=false; }
   return hold; }
 /* daily schedule */
 function qFired(k){ try{ const o=JSON.parse(localStorage.getItem('diwan.fired')||'{}'); return o.d===new Date().toDateString() && o.k.includes(k); }catch(e){ return false; } }
