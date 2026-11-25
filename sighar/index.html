@@ -54,6 +54,67 @@ body{background:#ffb703;transition:background .5s}
 #fx{position:fixed;inset:0;pointer-events:none;z-index:5}
 #tapHint{position:fixed;bottom:3vh;left:0;right:0;text-align:center;color:rgba(255,255,255,.9);font-size:clamp(16px,2.6vh,26px)}
 @media (prefers-reduced-motion:reduce){.bounce{animation:none}}
+/* ---- animated letter scenes ---- */
+#scene{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+#hero,#label,#counter{position:relative;z-index:2}
+#stage.withScene{justify-content:flex-start;padding-top:5vh}
+#stage.withScene #hero.txt{font-size:min(21vh,25vw);line-height:1.5;text-shadow:0 6px 0 rgba(255,255,255,.6)}
+#stage.withScene #label{font-size:clamp(30px,7vh,72px);margin-top:0;text-shadow:0 4px 0 rgba(255,255,255,.6)}
+.backdrop{position:absolute;left:0;bottom:0;width:100%;display:block}
+.ground{position:absolute;left:0;right:0;bottom:0;height:11vh}
+.sun{position:absolute;width:16vh;height:16vh;border-radius:50%;background:#ffd43b;box-shadow:0 0 0 2vh rgba(255,212,59,.35),0 0 0 4vh rgba(255,212,59,.15);animation:spin 8s ease-in-out infinite alternate}
+@keyframes spin{to{transform:scale(1.08)}}
+.cloud{position:absolute;opacity:.95;animation:drift linear infinite}
+@keyframes drift{from{transform:translateX(30vw)}to{transform:translateX(-120vw)}}
+.deco{position:absolute;font-size:9vh}
+.water{position:absolute;left:0;right:0;bottom:0;height:22vh;background:rgba(51,154,240,.78);z-index:3}
+.water::before{content:'';position:absolute;top:-2.2vh;left:-10vw;width:130vw;height:4.4vh;background:radial-gradient(circle at 50% 100%,rgba(51,154,240,.78) 58%,transparent 60%) 0 0/8vh 4.4vh repeat-x;animation:waves 2.4s linear infinite}
+@keyframes waves{to{transform:translateX(8vh)}}
+.actor{position:absolute;left:0;pointer-events:auto;cursor:pointer;z-index:2}
+.actor svg{display:block;width:100%;height:100%;overflow:visible}
+.yaywrap,.swim,.hopper{width:100%;height:100%}
+.yay{animation:yay .7s ease-out}
+@keyframes yay{30%{transform:translateY(-7vh) scale(1.15) rotate(-6deg)}65%{transform:translateY(0) scale(.94)}}
+.p{transform-box:fill-box}
+@keyframes walk{from{transform:translateX(105vw)}to{transform:translateX(-60vh)}}
+@keyframes step{0%,100%{transform:rotate(16deg)}50%{transform:rotate(-16deg)}}
+@keyframes bob2{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+@keyframes nod{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(5deg)}}
+@keyframes swish{0%,100%{transform:rotate(-14deg)}50%{transform:rotate(16deg)}}
+.leg{transform-origin:50% 0%;animation:step 1s ease-in-out infinite}.leg.b{animation-delay:-.5s}
+.bob{animation:bob2 .5s ease-in-out infinite}
+.neck{transform-origin:72% 100%;animation:nod 2s ease-in-out infinite}
+.tail{transform-origin:0% 0%;animation:swish 1.2s ease-in-out infinite}
+/* falcon */
+.falcon{top:6vh;width:48vh;height:32vh;animation:fly 9s ease-in-out infinite}
+@keyframes fly{0%{transform:translate(105vw,4vh) rotate(4deg)}30%{transform:translate(62vw,32vh) rotate(-12deg)}45%{transform:translate(45vw,38vh) rotate(0)}65%{transform:translate(25vw,16vh) rotate(12deg)}100%{transform:translate(-60vh,-2vh) rotate(6deg)}}
+.wing{transform-origin:15% 100%;animation:flap .42s ease-in-out infinite alternate}.wing.far{animation-delay:-.1s}
+@keyframes flap{from{transform:scaleY(1)}to{transform:scaleY(-.6)}}
+/* giraffe */
+.giraffe{bottom:7vh;height:54vh;width:49vh;animation:walk 17s linear infinite}
+/* duck */
+.duck{bottom:11.5vh;height:30vh;width:39vh;animation:walk 19s linear infinite}
+.swim{transform-origin:50% 70%;animation:rock 1.6s ease-in-out infinite}
+@keyframes rock{0%,100%{transform:rotate(-3deg) translateY(0)}50%{transform:rotate(3deg) translateY(-1vh)}}
+.paddle{transform-origin:50% 0%;animation:step .6s ease-in-out infinite}.paddle.b{animation-delay:-.3s}
+.dwing{transform-origin:5% 60%;animation:dflap 3s ease-in-out infinite}
+@keyframes dflap{0%,68%,100%{transform:rotate(0)}74%,86%{transform:rotate(-30deg)}80%,92%{transform:rotate(0)}}
+.dhead{transform-origin:60% 100%;animation:nod 1.6s ease-in-out infinite}
+.ripple{transform-origin:50% 50%;animation:ripple 1.8s ease-out infinite}.ripple.r2{animation-delay:-.9s}
+@keyframes ripple{from{transform:scale(.3);opacity:1}to{transform:scale(2.2);opacity:0}}
+/* rabbit */
+.rabbit{bottom:8vh;height:30vh;width:30vh;animation:walk 13s linear infinite}
+.hopper{transform-origin:50% 100%;animation:hop .9s ease-in-out infinite}
+@keyframes hop{0%{transform:translateY(0) scale(1.08,.88)}15%{transform:translateY(-2vh) scale(.95,1.08)}50%{transform:translateY(-16vh) rotate(-8deg)}85%{transform:translateY(0) rotate(3deg)}100%{transform:translateY(0) scale(1.08,.88)}}
+.ear{transform-origin:50% 100%;animation:earflop .9s ease-in-out infinite}
+@keyframes earflop{0%,100%{transform:rotate(0)}50%{transform:rotate(16deg)}}
+.bleg{transform-origin:85% 40%;animation:kick .9s ease-in-out infinite}
+@keyframes kick{0%,100%{transform:rotate(0)}30%,60%{transform:rotate(-32deg)}}
+/* camel */
+.camel{bottom:5vh;height:48vh;width:51vh;animation:walk 24s linear infinite}
+.camel .leg{animation-duration:1.6s}.camel .leg.b{animation-delay:-.8s}
+.camel .bob{animation-duration:.8s}.camel .neck{animation-duration:1.6s}
+@media (prefers-reduced-motion:reduce){.actor,.cloud{animation-duration:60s}}
 </style>
 </head>
 <body>
@@ -71,6 +132,7 @@ body{background:#ffb703;transition:background .5s}
 </div>
 
 <div id="stage" class="view hidden">
+  <div id="scene"></div>
   <button id="homeBtn" class="emo" tabindex="-1" aria-label="الرئيسية">🏠</button>
   <button id="prevBtn" class="navbtn" tabindex="-1" aria-label="السابق">▶</button>
   <button id="nextBtn" class="navbtn" tabindex="-1" aria-label="التالي">◀</button>
@@ -80,6 +142,7 @@ body{background:#ffb703;transition:background .5s}
   <div id="tapHint"></div>
 </div>
 
+<script src="scenes.js"></script>
 <script>
 {
 const $=s=>document.querySelector(s);
@@ -117,6 +180,8 @@ const SND={
  pop(p){p=p||1;V({type:'sine',f:[[0,500*p],[.08,1300*p]],dur:.12,vol:.4});N({dur:.06,filt:{type:'highpass',f:[[0,2000]]},vol:.3})},
  jingle(k){const sc=[523,587,659,698,784,880,988,1047];const base=k%4;[0,2,4,7].forEach((s,i)=>V({type:'triangle',f:[[0,sc[(base+s)%8]*(base+s>=8?2:1)]],dur:.22,vol:.25,t0:i*.11}))},
  tada(){[523,659,784,1047,784,1047].forEach((f,i)=>V({type:'triangle',f:[[0,f]],dur:.25,vol:.25,t0:i*.1}))},
+ screech(){V({f:[[0,1900],[.15,2600],[.9,1500]],dur:.95,filt:{f:[[0,2400]],q:2},vol:.3,vib:90,vibRate:30})},
+ boing(){V({type:'sine',f:[[0,180],[.08,520],[.4,260]],dur:.45,vol:.4,vib:30,vibRate:18})},
  whoosh(){N({dur:.35,filt:{f:[[0,400],[.35,2500]],q:1.5},vol:.25})}
 };
 /* optional spoken names where the device has an Arabic voice (phones, iPad) */
@@ -156,21 +221,25 @@ function clearTimers(){timers.forEach(clearTimeout);timers=[]}
 function later(fn,ms){timers.push(setTimeout(fn,ms))}
 function setBg(){bgI=(bgI+1)%COLORS.length;document.body.style.background=COLORS[bgI]}
 function anim(el,cls){el.classList.remove('pop-in','wiggle');void el.offsetWidth;el.classList.add(cls)}
-function goHome(){clearTimers();stopBalloons();mode=null;$('#stage').classList.add('hidden');$('#home').classList.remove('hidden');document.body.style.background='#ffb703';setTimeout(()=>{const t=document.querySelector('.tile[data-mode="'+(lastMode||'animals')+'"]')||document.querySelector('.tile');t.focus()},50)}
+function goHome(){clearTimers();stopBalloons();setScene(null);mode=null;$('#stage').classList.add('hidden');$('#home').classList.remove('hidden');document.body.style.background='#ffb703';setTimeout(()=>{const t=document.querySelector('.tile[data-mode="'+(lastMode||'animals')+'"]')||document.querySelector('.tile');t.focus()},50)}
 let lastMode=null;
 function start(m){mode=m;lastMode=m;idx=0;$('#home').classList.add('hidden');$('#stage').classList.remove('hidden');
  const nav=m!=='balloons';$('#prevBtn').classList.toggle('hidden',!nav);$('#nextBtn').classList.toggle('hidden',!nav);
  $('#tapHint').textContent=m==='balloons'?'اضغطي على البالونات 🎈':'';
- if(m==='balloons'){hero.textContent='';label.textContent='';counter.classList.add('hidden');startBalloons()}else render(true)}
-function render(){clearTimers();setBg();counter.classList.add('hidden');counter.innerHTML='';hero.className='emo';
+ setScene(null);if(m==='balloons'){hero.textContent='';label.textContent='';counter.classList.add('hidden');startBalloons()}else render(true)}
+function sceneSound(sc){if(sc.sound==='duck'||sc.sound==='camel')animalSound(sc.sound);else SND[sc.sound]()}
+function setScene(sc){const el=$('#scene');$('#stage').classList.toggle('withScene',!!sc);el.innerHTML=sc?sc.html:'';hero.style.color=sc?sc.ink:'';label.style.color=sc?sc.ink:'';
+ if(sc){document.body.style.background=sc.bg;const a=el.querySelector('.actor');if(a)a.addEventListener('click',e=>{e.stopPropagation();actorYay()})}}
+function actorYay(){const sc=mode==='letters'&&window.SCENES&&SCENES[idx];if(!sc)return false;const w=$('#scene .yaywrap');if(w){w.classList.remove('yay');void w.offsetWidth;w.classList.add('yay')}sceneSound(sc);confetti(25);return true}
+function render(){clearTimers();setBg();setScene(null);counter.classList.add('hidden');counter.innerHTML='';hero.className='emo';
  if(mode==='animals'){const a=ANIMALS[idx];hero.textContent=a[0];label.innerHTML='';label.textContent=a[1];anim(hero,'pop-in');later(()=>hero.classList.add('bounce'),600);SND.whoosh();later(()=>{animalSound(a[2]);anim(hero,'wiggle')},350);voice('n_'+a[2],a[1],3000);confetti(30)}
- else if(mode==='letters'){const l=LETTERS[idx];hero.className='txt';hero.textContent=l[0];label.innerHTML='<span class="emo"></span><span></span>';label.children[0].textContent=l[2];label.children[1].textContent=l[3];anim(hero,'pop-in');SND.jingle(idx);voice('let'+idx,l[1]+'، '+l[3],500);confetti(30)}
+ else if(mode==='letters'){const l=LETTERS[idx],sc=window.SCENES&&SCENES[idx];hero.className='txt';hero.textContent=l[0];label.innerHTML='<span class="emo"></span><span></span>';label.children[0].textContent=sc?'':l[2];label.children[1].textContent=l[3];if(sc){setScene(sc);later(()=>sceneSound(sc),2600)}anim(hero,'pop-in');SND.jingle(idx);voice('let'+idx,l[1]+'، '+l[3],500);confetti(30)}
  else if(mode==='numbers'){const n=idx+1,e=COUNT_EMO[idx%COUNT_EMO.length];hero.className='txt';hero.style.fontSize='min(30vh,40vw)';hero.textContent=ar(n);label.textContent='';counter.classList.remove('hidden');anim(hero,'pop-in');
   for(let k=1;k<=n;k++)later(()=>{const s=document.createElement('span');s.textContent=e;s.className='pop-in';counter.appendChild(s);SND.pop(1+k*.12);voice('num'+k,NUMW[k],120);if(k===n){later(()=>{label.textContent=NUMW[n];SND.tada();voice('yay'+(1+n%3),'',900);confetti(60)},450)}},500+k*800)}
  if(mode!=='numbers')hero.style.fontSize='';
 }
 function step(d){if(!mode||mode==='balloons')return;const len=mode==='animals'?ANIMALS.length:mode==='letters'?LETTERS.length:10;idx=(idx+d+len)%len;render()}
-function replay(){if(mode==='animals'){animalSound(ANIMALS[idx][2]);anim(hero,'wiggle');voice('n_'+ANIMALS[idx][2],ANIMALS[idx][1],2800);confetti(20)}else if(mode==='letters'){SND.jingle(idx);anim(hero,'wiggle');voice('let'+idx,LETTERS[idx][1]+'، '+LETTERS[idx][3],400);confetti(20)}else if(mode==='numbers'){render()}}
+function replay(){if(mode==='animals'){animalSound(ANIMALS[idx][2]);anim(hero,'wiggle');voice('n_'+ANIMALS[idx][2],ANIMALS[idx][1],2800);confetti(20)}else if(mode==='letters'){if(!actorYay())SND.jingle(idx);anim(hero,'wiggle');voice('let'+idx,LETTERS[idx][1]+'، '+LETTERS[idx][3],400);confetti(20)}else if(mode==='numbers'){render()}}
 
 /* ---------- balloons ---------- */
 let balloons=[],bTimer=null,bRaf=null,lastT=0;
