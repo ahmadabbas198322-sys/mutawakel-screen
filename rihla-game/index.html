@@ -10,8 +10,12 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="icon" href="icon-192.png">
 <title>رحلة المعرفة</title>
-<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
+@font-face{font-family:'Tajawal';font-weight:400;font-display:swap;src:url(fonts/tajawal-arabic-400-normal.woff2) format('woff2');unicode-range:U+0600-06FF,U+0750-077F,U+08A0-08FF,U+FB50-FDFF,U+FE70-FEFC,U+200C-200E;}
+@font-face{font-family:'Tajawal';font-weight:700;font-display:swap;src:url(fonts/tajawal-arabic-700-normal.woff2) format('woff2');unicode-range:U+0600-06FF,U+0750-077F,U+08A0-08FF,U+FB50-FDFF,U+FE70-FEFC,U+200C-200E;}
+@font-face{font-family:'Tajawal';font-weight:800;font-display:swap;src:url(fonts/tajawal-arabic-800-normal.woff2) format('woff2');unicode-range:U+0600-06FF,U+0750-077F,U+08A0-08FF,U+FB50-FDFF,U+FE70-FEFC,U+200C-200E;}
+@font-face{font-family:'Tajawal';font-weight:400;font-display:swap;src:url(fonts/tajawal-latin-400-normal.woff2) format('woff2');unicode-range:U+0000-00FF;}
+@font-face{font-family:'Tajawal';font-weight:700;font-display:swap;src:url(fonts/tajawal-latin-700-normal.woff2) format('woff2');unicode-range:U+0000-00FF;}
 /* VOICE: لعبة أطفال دافئة ومرحة
    IDEA: خريطة رحلة كنز، كل محطة تحدٍّ
    PICTURE: الخريطة نفسها بشخصية تتحرك
@@ -556,6 +560,12 @@ ib.onclick=async()=>{
 };
 if('serviceWorker' in navigator&&location.protocol==='https:'){try{navigator.serviceWorker.register('sw.js').catch(()=>{})}catch(_){}}
 
+const inApp=!!window.AndroidBridge||location.protocol==='file:';
+if(inApp){$('#fsBtn').classList.add('hidden');ib.classList.add('hidden')}
+window.closeSet=()=>{const ov=activeOverlay();
+ if(!ov){if(L){paused=true;show('pauseModal')}}
+ else if(ov.id==='pauseModal'){hideAll();paused=false}
+ else if(ov.id==='iosModal'||ov.id==='doneModal'||ov.id==='winModal')goHome();};
 loadLevel(Math.min(save.unlocked,LEVELS.length-1));
 resize();buildStart();show('startScreen');
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{resize();buildStart()});
