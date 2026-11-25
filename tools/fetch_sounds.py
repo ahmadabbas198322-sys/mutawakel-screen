@@ -7,14 +7,16 @@ UA = {'User-Agent': 'MutawakelScreens/1.0 (kids game; github.com/ahmadabbas19832
 
 import time
 def get(url):
-    for k in range(6):
+    for k in range(3):
+        if time.time() - T0 > 1500: raise RuntimeError('time budget used')
         try:
-            time.sleep(2.5)
+            time.sleep(6)
             return urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=60).read()
         except urllib.error.HTTPError as e:
             if e.code != 429: raise
-            time.sleep(20 * (k + 1))
+            print('429, waiting', flush=True); time.sleep(45)
     raise RuntimeError('rate limited')
+T0 = time.time()
 BAD = re.compile(r'^File:(En|De|LL-Q|Nl|Fr|Es|It|Pt|Ru|Sv)[-_ ]|Low.German|dialect|Rag|song|music|Michigan|Tools|shot|corner', re.I)
 
 ANIMALS = {
@@ -37,15 +39,17 @@ API = 'https://commons.wikimedia.org/w/api.php?'
 credits = json.load(open(OUT + '/animals/credits.json')) if os.path.exists(OUT + '/animals/credits.json') else {}
 for key, terms in ANIMALS.items():
     got = len([f for f in os.listdir(OUT + '/animals') if f.startswith(key + '_')]); seen = {v['file'] for v in credits.values()}
+    if got >= 1: continue
+    got_target = 1
     for term in terms:
-        if got >= 2: break
+        if got >= 1: break
         q = API + urllib.parse.urlencode({'action': 'query', 'format': 'json', 'generator': 'search', 'gsrnamespace': 6,
             'gsrsearch': term + ' filetype:audio', 'gsrlimit': 10, 'prop': 'imageinfo',
             'iiprop': 'url|size|mime|extmetadata', 'iiextmetadatafilter': 'LicenseShortName|Artist'})
         try: pages = json.loads(get(q)).get('query', {}).get('pages', {})
         except Exception as e: print('search fail', key, term, e); continue
         for p in sorted(pages.values(), key=lambda p: p.get('index', 99)):
-            if got >= 2: break
+            if got >= 1: break
             ii = (p.get('imageinfo') or [{}])[0]; t = p['title']
             if t in seen or BAD.search(t) or not ii.get('url') or ii.get('size', 9e9) > 8e6: continue
             seen.add(t)
@@ -62,7 +66,7 @@ for key, terms in ANIMALS.items():
             credits[os.path.basename(dst)] = {'file': t, 'url': ii.get('descriptionurl', ''),
                 'license': md.get('LicenseShortName', {}).get('value', ''),
                 'artist': re.sub('<[^>]+>', '', md.get('Artist', {}).get('value', ''))}
-            got += 1; print('ok', dst, t)
+            got += 1; print('ok', dst, t, flush=True)
 json.dump(credits, open(OUT + '/animals/credits.json', 'w'), ensure_ascii=False, indent=1)
 
 # ---- نطق عربي ----
