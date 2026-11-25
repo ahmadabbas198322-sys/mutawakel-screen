@@ -26,15 +26,16 @@ ANIMALS = {
  'sheep': ['sheep bleat', 'sheep baa', 'Ovis aries'],
  'duck': ['duck quack', 'mallard quack', 'Anas platyrhynchos call'],
  'rooster': ['rooster crowing', 'rooster crow', 'cock-a-doodle-doo'],
- 'lion': ['lion roar', 'Panthera leo roar', 'lion roaring'],
+ 'lion': ['Panthera leo roar', 'lion roar', 'lion roaring zoo', 'lion growl'],
  'elephant': ['elephant trumpet', 'elephant trumpeting', 'elephant call'],
  'horse': ['horse neigh', 'horse whinny', 'neighing'],
  'frog': ['frog croak', 'frog call', 'Rana croaking'],
  'bird': ['house sparrow song', 'sparrow chirp', 'bird chirping'],
- 'chick': ['chick peep', 'chicks chirping', 'baby chicken'],
+ 'chick': ['chick peeping', 'chicks peeping', 'chicken chick', 'baby chick'],
  'bee': ['bee buzzing', 'honey bee buzz', 'bees buzzing'],
- 'camel': ['camel sound', 'camel grunt', 'Camelus dromedarius'],
+ 'camel': ['camel grunt', 'camel groaning', 'dromedary camel sound', 'camel noise'],
 }
+NEED = {'lion': r'lion|leo|roar', 'camel': r'camel|dromedar', 'chick': r'chick|poussin|kÃ¼ken|peep', 'cow': r'cow|moo', 'bird': r'sparrow|passer|bird', 'bee': r'bee|apis'}
 API = 'https://commons.wikimedia.org/w/api.php?'
 credits = json.load(open(OUT + '/animals/credits.json')) if os.path.exists(OUT + '/animals/credits.json') else {}
 for key, terms in ANIMALS.items():
@@ -51,7 +52,7 @@ for key, terms in ANIMALS.items():
         for p in sorted(pages.values(), key=lambda p: p.get('index', 99)):
             if got >= 1: break
             ii = (p.get('imageinfo') or [{}])[0]; t = p['title']
-            if t in seen or BAD.search(t) or not ii.get('url') or ii.get('size', 9e9) > 8e6: continue
+            if t in seen or BAD.search(t) or not re.search(NEED.get(key,'.'), t, re.I) or not ii.get('url') or ii.get('size', 9e9) > 8e6: continue
             seen.add(t)
             raw = f'/tmp/{key}_raw'
             try: open(raw, 'wb').write(get(ii['url']))

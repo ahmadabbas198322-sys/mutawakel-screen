@@ -29,12 +29,6 @@
   "license": "CC BY-SA 3.0",
   "artist": "Amada44"
  },
- "dog_3.mp3": {
-  "file": "File:Me Dog Can`t Bark, Mento.ogg",
-  "url": "https://commons.wikimedia.org/wiki/File:Me_Dog_Can%60t_Bark,_Mento.ogg",
-  "license": "CC BY-SA 4.0",
-  "artist": "Gasybeaugosse2020"
- },
  "sheep_1.mp3": {
   "file": "File:Sheep bleat.ogg",
   "url": "https://commons.wikimedia.org/wiki/File:Sheep_bleat.ogg",
@@ -58,12 +52,6 @@
   "url": "https://commons.wikimedia.org/wiki/File:Rooster_crowing.ogg",
   "license": "CC BY-SA 4.0",
   "artist": "Filo gèn'"
- },
- "lion_1.mp3": {
-  "file": "File:Civil defense siren and missile explosions sounds in Israel during Iran war 2026.ogg",
-  "url": "https://commons.wikimedia.org/wiki/File:Civil_defense_siren_and_missile_explosions_sounds_in_Israel_during_Iran_war_2026.ogg",
-  "license": "CC0",
-  "artist": "יורם שורק"
  },
  "elephant_1.mp3": {
   "file": "File:Elephant voice - trumpeting.ogg",
@@ -94,11 +82,5 @@
   "url": "https://commons.wikimedia.org/wiki/File:Bee_Buzzing_Sound_-_Animal_Sounds.opus",
   "license": "CC BY 3.0",
   "artist": "Free Sounds Library User Spanac"
- },
- "camel_1.mp3": {
-  "file": "File:Tabuk (ISRC USUAN1100818).mp3",
-  "url": "https://commons.wikimedia.org/wiki/File:Tabuk_(ISRC_USUAN1100818).mp3",
-  "license": "CC BY 3.0",
-  "artist": "Kevin MacLeod"
  }
 }
