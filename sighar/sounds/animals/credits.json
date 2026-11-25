@@ -1,0 +1,50 @@
+{
+ "cat_1.mp3": {
+  "file": "File:Meow of a pleading cat.oga",
+  "url": "https://commons.wikimedia.org/wiki/File:Meow_of_a_pleading_cat.oga",
+  "license": "Public domain",
+  "artist": "Heismark"
+ },
+ "cat_2.mp3": {
+  "file": "File:Meow of a Siamese cat - freemaster2.wav",
+  "url": "https://commons.wikimedia.org/wiki/File:Meow_of_a_Siamese_cat_-_freemaster2.wav",
+  "license": "CC0",
+  "artist": "freemaster2"
+ },
+ "cat_3.mp3": {
+  "file": "File:Meow domestic cat.ogg",
+  "url": "https://commons.wikimedia.org/wiki/File:Meow_domestic_cat.ogg",
+  "license": "GFDL",
+  "artist": "Smser"
+ },
+ "dog_1.mp3": {
+  "file": "File:Dog barking.webm",
+  "url": "https://commons.wikimedia.org/wiki/File:Dog_barking.webm",
+  "license": "CC BY-SA 4.0",
+  "artist": "User:Dr. Nono YesMaybe"
+ },
+ "dog_2.mp3": {
+  "file": "File:Barking of a dog 2.ogg",
+  "url": "https://commons.wikimedia.org/wiki/File:Barking_of_a_dog_2.ogg",
+  "license": "CC BY-SA 3.0",
+  "artist": "Amada44"
+ },
+ "dog_3.mp3": {
+  "file": "File:Me Dog Can`t Bark, Mento.ogg",
+  "url": "https://commons.wikimedia.org/wiki/File:Me_Dog_Can%60t_Bark,_Mento.ogg",
+  "license": "CC BY-SA 4.0",
+  "artist": "Gasybeaugosse2020"
+ },
+ "sheep_1.mp3": {
+  "file": "File:Sheep bleat.ogg",
+  "url": "https://commons.wikimedia.org/wiki/File:Sheep_bleat.ogg",
+  "license": "CC0",
+  "artist": "Eviatar Bach"
+ },
+ "duck_1.mp3": {
+  "file": "File:Pekin duck & mallard.ogg",
+  "url": "https://commons.wikimedia.org/wiki/File:Pekin_duck_%26_mallard.ogg",
+  "license": "CC BY-SA 4.0",
+  "artist": "WaderClub"
+ }
+}
