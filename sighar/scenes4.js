@@ -24,7 +24,9 @@
   .lemon{bottom:9vh;width:18vh;height:18vh}
   .lbounce{width:100%;height:100%;transform-origin:50% 100%;animation:lbounce .8s ease-in-out infinite}
   @keyframes lbounce{0%,100%{transform:translateY(0) scale(1.1,.9)}50%{transform:translateY(-12vh) rotate(-25deg) scale(.95,1.05)}}
-  .banana{--w:30vh;width:30vh;height:46vh;bottom:9vh}
+  .banana{--w:34vh;width:34vh;height:38vh;bottom:12vh}
+  .bsway{animation:bsw 2.4s ease-in-out infinite}.bsway.k1{animation-delay:-.4s}.bsway.k3{animation-delay:-.8s}
+  @keyframes bsw{0%,100%{transform:rotate(-7deg)}50%{transform:rotate(7deg)}}
   .peelL{transform-origin:90% 100%;animation:peelL 6s ease-in-out infinite}
   .peelR{transform-origin:10% 100%;animation:peelR 6s ease-in-out infinite}
   @keyframes peelL{0%,15%,90%,100%{transform:rotate(0)}35%,75%{transform:rotate(-62deg)}}
@@ -91,13 +93,7 @@
     <ellipse cx="40" cy="40" rx="8" ry="12" fill="#fff" opacity=".4"/>${face(60, 60, 1.4)}</svg></div></div></div>`;
 
   /* م موز */
-  const BANANA = A('banana center', `<svg viewBox="0 0 200 300" style="overflow:visible"><g class="p bhappy">
-    <path d="M70 120 C64 60 84 30 100 24 C116 30 136 60 130 120 Z" fill="#fff3bf"/>
-    <g class="p peelL"><path d="M100 150 C70 150 56 110 66 60 C74 80 86 110 100 150 Z" fill="#ffd43b" stroke="#fab005" stroke-width="3"/></g>
-    <g class="p peelR"><path d="M100 150 C130 150 144 110 134 60 C126 80 114 110 100 150 Z" fill="#ffd43b" stroke="#fab005" stroke-width="3"/></g>
-    <path d="M56 120 C50 190 70 270 100 280 C130 270 150 190 144 120 C130 132 70 132 56 120 Z" fill="#ffd43b" stroke="#fab005" stroke-width="4"/>
-    <path d="M96 280 L104 280 L102 292 L98 292 Z" fill="#6b4423"/>
-    ${face(100, 190, 1.8)}</g></svg>`);
+  const BANANA = A('banana center', `<svg viewBox="0 0 240 260" style="overflow:visible"><g class="p bsway k1" style="transform-box:view-box;transform-origin:46px 30px"><g transform="rotate(-26 46 30)"><path d="M34 40 C40 128 112 182 196 170 C208 168 210 156 200 154 C124 154 70 104 58 36 C56 26 36 28 34 40 Z" fill="#ffd43b" stroke="#f59f00" stroke-width="4"/><path d="M196 170 C204 170 210 164 206 156 L200 154 Z" fill="#6b4423"/></g></g><g class="p bsway k3" style="transform-box:view-box;transform-origin:46px 30px"><g transform="rotate(22 46 30)"><path d="M34 40 C40 128 112 182 196 170 C208 168 210 156 200 154 C124 154 70 104 58 36 C56 26 36 28 34 40 Z" fill="#ffd43b" stroke="#f59f00" stroke-width="4"/><path d="M196 170 C204 170 210 164 206 156 L200 154 Z" fill="#6b4423"/></g></g><g class="p bsway k2" style="transform-box:view-box;transform-origin:46px 30px"><g transform="rotate(-2 46 30)"><path d="M34 40 C40 128 112 182 196 170 C208 168 210 156 200 154 C124 154 70 104 58 36 C56 26 36 28 34 40 Z" fill="#ffd43b" stroke="#f59f00" stroke-width="4"/><path d="M196 170 C204 170 210 164 206 156 L200 154 Z" fill="#6b4423"/>${face(118, 128, 1.5)}</g></g><path d="M30 34 L46 8 L62 34 Z" fill="#5c940d"/><rect x="38" y="0" width="16" height="14" rx="4" fill="#6b4423"/></svg>`);
 
   /* هـ هدية */
   const gstars = [[-120, '#ffd43b'], [-60, '#ff6b6b'], [0, '#4dabf7'], [60, '#69db7c'], [120, '#cc5de8'], [-30, '#ffa94d'], [30, '#ffd43b']].map(([dx, c], i) => `<g class="p gstar" style="--dx:${dx}px;animation-delay:${(i * .05).toFixed(2)}s">${star(150, 120, 16, c)}</g>`).join('');
