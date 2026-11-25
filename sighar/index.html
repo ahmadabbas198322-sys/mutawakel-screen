@@ -115,6 +115,26 @@ body{background:#ffb703;transition:background .5s}
 .camel .leg{animation-duration:1.6s}.camel .leg.b{animation-delay:-.8s}
 .camel .bob{animation-duration:.8s}.camel .neck{animation-duration:1.6s}
 @media (prefers-reduced-motion:reduce){.actor,.cloud{animation-duration:60s}}
+.walker{animation:walk linear infinite}
+.fast .leg{animation-duration:.45s}.fast .leg.b{animation-delay:-.225s}.fast .bob{animation-duration:.225s}
+.slow .leg{animation-duration:1.5s}.slow .leg.b{animation-delay:-.75s}.slow .bob{animation-duration:.75s}
+.peck{transform-origin:85% 100%;animation:peck 2.4s ease-in-out infinite}
+@keyframes peck{0%,55%,100%{transform:rotate(0)}65%,75%{transform:rotate(-38deg)}70%,80%{transform:rotate(-30deg)}}
+.howl{transform-origin:75% 100%;animation:howl 5s ease-in-out infinite}
+@keyframes howl{0%,50%,100%{transform:rotate(0)}60%,85%{transform:rotate(26deg)}}
+.trunk{transform-origin:50% 0%;animation:swish 1.8s ease-in-out infinite}
+.ear2{transform-origin:0% 50%;animation:earflap 1.4s ease-in-out infinite}
+@keyframes earflap{50%{transform:scaleX(1.2) rotate(-6deg)}}
+.wag{transform-origin:0% 100%;animation:wag .28s ease-in-out infinite alternate}
+@keyframes wag{from{transform:rotate(-20deg)}to{transform:rotate(20deg)}}
+.wave{transform-origin:0% 100%;animation:swish 1.6s ease-in-out infinite}
+.fear{transform-origin:50% 0%;animation:swish .9s ease-in-out infinite}
+.tongue{transform-origin:50% 0%;animation:pant .3s ease-in-out infinite alternate}
+@keyframes pant{to{transform:scaleY(1.35)}}
+.dust{transform-origin:50% 50%;animation:dust .5s ease-out infinite}.dust.d2{animation-delay:-.25s}
+@keyframes dust{from{transform:scale(.3);opacity:.9}to{transform:scale(1.8) translateX(16px);opacity:0}}
+.twinkle{position:absolute;width:1.2vh;height:1.2vh;background:#fff;border-radius:50%;box-shadow:0 0 1.5vh #fff;animation:tw 1.6s ease-in-out infinite alternate}
+@keyframes tw{from{opacity:.25;transform:scale(.6)}to{opacity:1;transform:scale(1.2)}}
 </style>
 </head>
 <body>
@@ -143,6 +163,9 @@ body{background:#ffb703;transition:background .5s}
 </div>
 
 <script src="scenes.js"></script>
+<script src="scenes2.js"></script>
+<script src="scenes3.js"></script>
+<script src="scenes4.js"></script>
 <script>
 {
 const $=s=>document.querySelector(s);
@@ -182,6 +205,12 @@ const SND={
  tada(){[523,659,784,1047,784,1047].forEach((f,i)=>V({type:'triangle',f:[[0,f]],dur:.25,vol:.25,t0:i*.1}))},
  screech(){V({f:[[0,1900],[.15,2600],[.9,1500]],dur:.95,filt:{f:[[0,2400]],q:2},vol:.3,vib:90,vibRate:30})},
  boing(){V({type:'sine',f:[[0,180],[.08,520],[.4,260]],dur:.45,vol:.4,vib:30,vibRate:18})},
+ cluck(){[0,.18,.36,.7].forEach(t0=>V({type:'square',f:[[0,700],[.08,450]],dur:.1,filt:{f:[[0,1200]],q:4},vol:.35,t0}))},
+ howl(){V({type:'sine',f:[[0,380],[.5,720],[1.6,760],[2.2,520]],dur:2.3,vol:.35,vib:8,vibRate:5,att:.3})},
+ blub(){[0,.25,.45].forEach((t0,i)=>V({type:'sine',f:[[0,300+i*80],[.12,900+i*120]],dur:.14,vol:.35,t0}))},
+ plane(){N({dur:2,filt:{type:'bandpass',f:[[0,300],[2,1400]],q:1.2},vol:.35,att:.4});V({f:[[0,90],[2,180]],dur:2,filt:{type:'lowpass',f:[[0,500]]},vol:.25,am:.6,amRate:30,att:.4})},
+ rain(){N({dur:2.2,filt:{type:'highpass',f:[[0,2500]]},vol:.15,att:.3});[0,.3,.5,.9,1.2,1.5,1.8].forEach(t0=>V({type:'sine',f:[[0,1800+Math.random()*900],[.05,900]],dur:.07,vol:.2,t0}))},
+ chime(){[1047,1319,1568,2093].forEach((f,i)=>V({type:'sine',f:[[0,f]],dur:.5,vol:.2,t0:i*.12}))},
  whoosh(){N({dur:.35,filt:{f:[[0,400],[.35,2500]],q:1.5},vol:.25})}
 };
 /* optional spoken names where the device has an Arabic voice (phones, iPad) */
@@ -198,7 +227,8 @@ function file(path,fallback){let a=cache[path];if(a===false){if(fallback)fallbac
  try{a.pause();a.currentTime=0;const p=a.play();if(p&&p.catch)p.catch(()=>{if(a.error||a.networkState===3){cache[path]=false;if(fallback)fallback()}})}catch(e){if(fallback)fallback()}}
 const vIdx={};
 function animalSound(key){const n=VARIANTS[key]||1;vIdx[key]=((vIdx[key]||0)%n)+1;file('sounds/animals/'+key+'_'+vIdx[key]+'.mp3',()=>SND[key]())}
-function voice(name,fallbackText,delay){setTimeout(()=>file('sounds/voice/'+name+'.mp3',()=>say(fallbackText)),delay||0)}
+function voice(name,fallbackText,delay){later(()=>file('sounds/voice/'+name+'.mp3',()=>say(fallbackText)),delay||0)}
+function stopAll(){for(const k in cache){const a=cache[k];if(a){try{a.pause();a.currentTime=0}catch(e){}}}try{speechSynthesis.cancel()}catch(e){}}
 /* ---------- content ---------- */
 const ANIMALS=[['🐱','قطة','cat'],['🐶','كلب','dog'],['🐮','بقرة','cow'],['🐑','خروف','sheep'],['🦆','بطة','duck'],['🐓','ديك','rooster'],['🦁','أسد','lion'],['🐘','فيل','elephant'],['🐴','حصان','horse'],['🐸','ضفدع','frog'],['🐦','عصفور','bird'],['🐥','كتكوت','chick'],['🐝','نحلة','bee'],['🐪','جمل','camel']];
 const LETTERS=[['أ','ألف','🐇','أرنب'],['ب','باء','🦆','بطة'],['ت','تاء','🍎','تفاحة'],['ث','ثاء','🦊','ثعلب'],['ج','جيم','🐪','جمل'],['ح','حاء','🐴','حصان'],['خ','خاء','🐑','خروف'],['د','دال','🐔','دجاجة'],['ذ','ذال','🐺','ذئب'],['ر','راء','🪶','ريشة'],['ز','زاي','🦒','زرافة'],['س','سين','🐟','سمكة'],['ش','شين','☀️','شمس'],['ص','صاد','🦅','صقر'],['ض','ضاد','🐸','ضفدع'],['ط','طاء','✈️','طائرة'],['ظ','ظاء','✉️','ظرف'],['ع','عين','🍇','عنب'],['غ','غين','☁️','غيمة'],['ف','فاء','🐘','فيل'],['ق','قاف','🐱','قطة'],['ك','كاف','🐶','كلب'],['ل','لام','🍋','ليمون'],['م','ميم','🍌','موز'],['ن','نون','🐝','نحلة'],['هـ','هاء','🎁','هدية'],['و','واو','🌹','وردة'],['ي','ياء','✋','يد']];
@@ -217,7 +247,7 @@ requestAnimationFrame(fxLoop);
 /* ---------- views ---------- */
 let mode=null,idx=0,timers=[],bgI=0;
 const hero=$('#hero'),label=$('#label'),counter=$('#counter');
-function clearTimers(){timers.forEach(clearTimeout);timers=[]}
+function clearTimers(){timers.forEach(clearTimeout);timers=[];if(typeof stopAll==='function')stopAll()}
 function later(fn,ms){timers.push(setTimeout(fn,ms))}
 function setBg(){bgI=(bgI+1)%COLORS.length;document.body.style.background=COLORS[bgI]}
 function anim(el,cls){el.classList.remove('pop-in','wiggle');void el.offsetWidth;el.classList.add(cls)}
@@ -227,7 +257,8 @@ function start(m){mode=m;lastMode=m;idx=0;$('#home').classList.add('hidden');$('
  const nav=m!=='balloons';$('#prevBtn').classList.toggle('hidden',!nav);$('#nextBtn').classList.toggle('hidden',!nav);
  $('#tapHint').textContent=m==='balloons'?'اضغطي على البالونات 🎈':'';
  setScene(null);if(m==='balloons'){hero.textContent='';label.textContent='';counter.classList.add('hidden');startBalloons()}else render(true)}
-function sceneSound(sc){if(sc.sound==='duck'||sc.sound==='camel')animalSound(sc.sound);else SND[sc.sound]()}
+const FILE_ANIMALS=['cat','dog','cow','sheep','duck','rooster','lion','elephant','horse','frog','bird','bee','camel','chick'];
+function sceneSound(sc){if(FILE_ANIMALS.includes(sc.sound))animalSound(sc.sound);else if(SND[sc.sound])SND[sc.sound]()}
 function setScene(sc){const el=$('#scene');$('#stage').classList.toggle('withScene',!!sc);el.innerHTML=sc?sc.html:'';hero.style.color=sc?sc.ink:'';label.style.color=sc?sc.ink:'';
  if(sc){document.body.style.background=sc.bg;const a=el.querySelector('.actor');if(a)a.addEventListener('click',e=>{e.stopPropagation();actorYay()})}}
 function actorYay(){const sc=mode==='letters'&&window.SCENES&&SCENES[idx];if(!sc)return false;const w=$('#scene .yaywrap');if(w){w.classList.remove('yay');void w.offsetWidth;w.classList.add('yay')}sceneSound(sc);confetti(25);return true}
@@ -246,11 +277,11 @@ let balloons=[],bTimer=null,bRaf=null,lastT=0;
 function spawn(){if(balloons.length>=7)return;const el=document.createElement('div');el.className='balloon emo';const a=ANIMALS[Math.floor(Math.random()*ANIMALS.length)];el.textContent=a[0];let col;do{col=COLORS[Math.floor(Math.random()*COLORS.length)]}while(col===COLORS[bgI]);el.style.background=col;el.style.color=col;
  const w=Math.min(innerHeight*.22,innerWidth*.26);const b={el,x:Math.random()*(innerWidth-w),y:innerHeight+20,v:.6+Math.random()*.7,sway:Math.random()*6,a};el.style.left=b.x+'px';el.style.top=b.y+'px';
  el.addEventListener('pointerdown',e=>{e.stopPropagation();popB(b)});document.body.appendChild(el);balloons.push(b)}
-function popB(b){if(!balloons.includes(b))return;const r=b.el.getBoundingClientRect();SND.pop(1.2);setTimeout(()=>animalSound(b.a[2]),120);if(Math.random()<.3)voice('yay'+(1+Math.floor(Math.random()*3)),'',1500);confetti(35,r.left+r.width/2,r.top+r.height/2);b.el.remove();balloons=balloons.filter(x=>x!==b);setBg()}
+function popB(b){if(!balloons.includes(b))return;const r=b.el.getBoundingClientRect();if(r.bottom<=0||r.top>=innerHeight)return;SND.pop(1.2);setTimeout(()=>animalSound(b.a[2]),120);if(Math.random()<.3)voice('yay'+(1+Math.floor(Math.random()*3)),'',1500);confetti(35,r.left+r.width/2,r.top+r.height/2);b.el.remove();balloons=balloons.filter(x=>x!==b);setBg()}
 function bLoop(t){const dt=Math.min(50,t-(lastT||t));lastT=t;for(const b of balloons){b.y-=b.v*dt/6;b.sway+=dt/700;b.el.style.top=b.y+'px';b.el.style.transform='translateX('+Math.sin(b.sway)*14+'px)';if(b.y<-innerHeight*.35){b.el.remove();b.gone=true}}balloons=balloons.filter(b=>!b.gone);bRaf=requestAnimationFrame(bLoop)}
 function startBalloons(){stopBalloons();setBg();for(let i=0;i<3;i++)setTimeout(spawn,i*400);bTimer=setInterval(spawn,1100);lastT=0;bRaf=requestAnimationFrame(bLoop)}
 function stopBalloons(){clearInterval(bTimer);cancelAnimationFrame(bRaf);balloons.forEach(b=>b.el.remove());balloons=[]}
-function popTop(){if(!balloons.length)return;let best=balloons[0];for(const b of balloons)if(b.y<best.y&&b.y>-50)best=b;popB(best)}
+function popTop(){const vis=balloons.filter(b=>{const r=b.el.getBoundingClientRect();return r.top>=0&&r.bottom<=innerHeight});if(!vis.length)return;let best=vis[0];const mid=innerHeight*.45;for(const b of vis){const r=b.el.getBoundingClientRect(),r0=best.el.getBoundingClientRect();if(Math.abs(r.top+r.height/2-mid)<Math.abs(r0.top+r0.height/2-mid))best=b}popB(best)}
 
 /* ---------- input ---------- */
 document.querySelectorAll('.tile').forEach(t=>t.onclick=()=>{ac();start(t.dataset.mode)});
