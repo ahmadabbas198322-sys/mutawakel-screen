@@ -1,0 +1,21 @@
+name: fetch-sounds
+on:
+  workflow_dispatch:
+  push:
+    paths: ['tools/fetch_sounds.py']
+permissions:
+  contents: write
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+      - run: pip install edge-tts
+      - run: python tools/fetch_sounds.py
+      - run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add sighar/sounds
+          git commit -m "أصوات الحيوانات والنطق العربي للعبة مرح الصغار" || echo nothing
+          git push
