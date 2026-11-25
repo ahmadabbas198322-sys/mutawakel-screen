@@ -24,7 +24,7 @@ ANIMALS = {
  'dog': ['dog bark', 'dog barking', 'Canis familiaris bark'],
  'cow': ['cow moo', 'cow mooing', 'Bos taurus moo'],
  'sheep': ['sheep bleat', 'sheep baa', 'Ovis aries'],
- 'duck': ['mallard quacking', 'duck quacking', 'female mallard quack', 'Anas platyrhynchos quack'],
+ 'duck': ['Anas platyrhynchos', 'mallard', 'duck quacking', 'domestic duck', 'duck call'],
  'rooster': ['rooster crowing', 'rooster crow', 'cock-a-doodle-doo'],
  'lion': ['Panthera leo roar', 'lion roar', 'lion roaring zoo', 'lion growl'],
  'elephant': ['elephant trumpet', 'elephant trumpeting', 'elephant call'],
@@ -35,7 +35,7 @@ ANIMALS = {
  'bee': ['bee buzzing', 'honey bee buzz', 'bees buzzing'],
  'camel': ['camel grunt', 'camel groaning', 'dromedary camel sound', 'camel noise'],
 }
-NEED = {'duck': r'quack', 'lion': r'lion|leo|roar', 'camel': r'camel|dromedar', 'chick': r'chick|poussin|kÃ¼ken|peep', 'cow': r'cow|moo', 'bird': r'sparrow|passer|bird', 'bee': r'bee|apis'}
+NEED = {'duck': r'quack|mallard|duck|Anas', 'lion': r'lion|leo|roar', 'camel': r'camel|dromedar', 'chick': r'chick|poussin|kÃ¼ken|peep', 'cow': r'cow|moo', 'bird': r'sparrow|passer|bird', 'bee': r'bee|apis'}
 API = 'https://commons.wikimedia.org/w/api.php?'
 credits = json.load(open(OUT + '/animals/credits.json')) if os.path.exists(OUT + '/animals/credits.json') else {}
 ONLY = os.environ.get('ONLY', 'duck').split(',')
