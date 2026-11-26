@@ -362,7 +362,9 @@ const CLK=(function(){
   let ref=null; try{ ref=JSON.parse(localStorage.getItem('clkref')||'null'); }catch(e){}
   function drift(b){ const r=+S.rateFix||0; if(!r) return 0; if(!ref){ ref={sys:b,acc:0}; try{localStorage.setItem('clkref',JSON.stringify(ref))}catch(e){} } return ref.acc-(b-ref.sys)*r/86400; }
   function setRate(r){ const b=raw(); const cur=drift(b); ref={sys:b,acc:(+S.rateFix?cur:0)}; S.rateFix=r; try{localStorage.setItem('clkref',JSON.stringify(ref))}catch(e){} }
-  function now(){ guard(); const b=raw(); return src==='net'? b : b+drift(b)+(+S.secFix||0)*1000; }
+  function now(){ guard(); const b=raw(); const r=+S.rateFix||0;
+    /* after a network sync the speed correction counts from that sync; manual seconds are not needed then */
+    return src==='net'? b-(b-A.t)*r/86400 : b+drift(b)+(+S.secFix||0)*1000; }
   function sync(manual){ lastTry=Date.now(); if(!BR||!BR.netTime){ lastOk=false; return false; }
     let v=''; const p0=performance.now(); try{ v=String(BR.netTime()||''); }catch(e){ v=''; } const p1=performance.now();
     let t=NaN; if(v[0]==='D') t=+v.slice(1)+500; else if(/^\d{9,}(\.\d+)?$/.test(v.trim())) t=parseFloat(v)*1000;
@@ -370,6 +372,7 @@ const CLK=(function(){
     const mid=(p0+p1)/2; A={t:t,p:mid}; src='net'; lastNet=Date.now(); lastOk=true;
     lastDiff=(t+(performance.now()-mid))-Date.now(); /* true time − TV clock, in ms */
     try{ localStorage.setItem('clk',JSON.stringify({lastNet,diff:lastDiff})); }catch(e){}
+    if(+S.rateFix){ ref={sys:Date.now(),acc:lastDiff}; try{localStorage.setItem('clkref',JSON.stringify(ref))}catch(e){} }
     return true; }
   function loop(){ const ok=sync(); setTimeout(loop, ok?30*60000:5*60000); }
   setTimeout(loop, 4000);
