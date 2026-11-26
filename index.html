@@ -361,7 +361,10 @@ const CLK=(function(){
     if(Math.abs(d)>120000){ A={t:Date.now(),p:performance.now()}; src='sys'; soon(); return; }
     /* small jump: if we are not on network time yet, check the internet right away; if the jump happens
        shortly after start-up (the TV setting its own clock once Wi-Fi connects) follow it */
-    if(Math.abs(d)>1500 && src!=='net' && Date.now()-jumpAt>60000){ jumpAt=Date.now();
+    /* TV clock ahead of our counter: the TV was in standby (our counter pauses while it sleeps) or it moved its own clock forward.
+       Follow it, keep the last network correction, and re-check the internet. */
+    if(d>1500){ A={t:Date.now()+(src==='net'&&lastDiff!=null?lastDiff:0),p:performance.now()}; soon(); return; }
+    if(d<-1500 && src!=='net' && Date.now()-jumpAt>60000){ jumpAt=Date.now();
       setTimeout(()=>{ if(!sync() && Date.now()-boot<15*60000){ A={t:Date.now(),p:performance.now()}; } },0); } }
   /* speed correction for a TV whose own clock runs fast/slow: S.rateFix = seconds the TV gains per day */
   let ref=null; try{ ref=JSON.parse(localStorage.getItem('clkref')||'null'); }catch(e){}
