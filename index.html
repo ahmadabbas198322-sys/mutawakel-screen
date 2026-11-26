@@ -201,6 +201,14 @@ body{font-family:'Tajawal',system-ui,sans-serif;-webkit-font-smoothing:antialias
 #stage.card #tbl,#stage.card:not(.iqc) #bottom,#stage.card:not(.iqc) #ticker{display:none}
 #stage.card.iqc #nextLine{display:none!important}
 #stage.card.iqc #card{margin:18px 40px 18px;padding:30px 44px}
+/* reminder card during the iqama wait: shrink the countdown into one compact line so the card gets the room */
+#stage.card.iqc:not(.land) #phone{display:none}
+#stage.card.iqc:not(.land) #bottom{grid-template-columns:1fr!important;flex:0 0 auto;margin-top:0;margin-bottom:4px}
+#stage.card.iqc:not(.land) #card{flex:1 1 auto;min-height:0}
+#stage.card.iqc:not(.land) #bottom>div{flex-direction:row;gap:34px;padding:6px 16px}
+#stage.card.iqc:not(.land) #cdLbl small{display:none}
+#stage.card.iqc:not(.land) #cd{font-size:118px!important}
+#cd{transition:font-size .5s ease}
 #stage.land.card.iqc #card{grid-area:tbl;margin:20px 30px}
 .iqc .papp{padding:26px 40px 24px}.iqc .papp .pr{height:74px;font-size:44px}.iqc .tgl{transform:scale(.85)}.iqc .papp .send{height:80px;margin-top:22px;font-size:44px}.iqc .pmsg{font-size:46px}
 #cd.blink{animation:blinkZ 1s steps(1) infinite}@keyframes blinkZ{50%{opacity:0}}
@@ -350,7 +358,11 @@ const CLK=(function(){
   function guard(){ const d=Date.now()-raw();
     /* big jump (manual change of TV time, or the device slept): follow the TV clock again */
     if(Math.abs(d)>120000){ A={t:Date.now(),p:performance.now()}; src='sys'; } }
-  function now(){ guard(); return raw()+(src==='net'?0:(+S.secFix||0)*1000); }
+  /* speed correction for a TV whose own clock runs fast/slow: S.rateFix = seconds the TV gains per day */
+  let ref=null; try{ ref=JSON.parse(localStorage.getItem('clkref')||'null'); }catch(e){}
+  function drift(b){ const r=+S.rateFix||0; if(!r) return 0; if(!ref){ ref={sys:b,acc:0}; try{localStorage.setItem('clkref',JSON.stringify(ref))}catch(e){} } return ref.acc-(b-ref.sys)*r/86400; }
+  function setRate(r){ const b=raw(); const cur=drift(b); ref={sys:b,acc:(+S.rateFix?cur:0)}; S.rateFix=r; try{localStorage.setItem('clkref',JSON.stringify(ref))}catch(e){} }
+  function now(){ guard(); const b=raw(); return src==='net'? b : b+drift(b)+(+S.secFix||0)*1000; }
   function sync(manual){ lastTry=Date.now(); if(!BR||!BR.netTime){ lastOk=false; return false; }
     let v=''; const p0=performance.now(); try{ v=String(BR.netTime()||''); }catch(e){ v=''; } const p1=performance.now();
     let t=NaN; if(v[0]==='D') t=+v.slice(1)+500; else if(/^\d{9,}(\.\d+)?$/.test(v.trim())) t=parseFloat(v)*1000;
@@ -366,8 +378,8 @@ const CLK=(function(){
     const diff=lastDiff==null?'':(' · ساعة التلفزيون '+(lastDiff>0?'متأخرة ':'متقدمة ')+Math.abs(lastDiff/1000).toFixed(1)+' ثانية');
     if(src==='net') return 'مضبوط من الإنترنت '+fmt(ago)+diff;
     if(!BR||!BR.netTime) return 'الضبط من الإنترنت متاح في تطبيق التلفزيون فقط';
-    return 'ما فيه ضبط من الإنترنت حالياً — يمشي على ساعة التلفزيون'+((+S.secFix)?' مع التعديل اليدوي':'')+(lastNet?(' · آخر ضبط '+fmt(ago)):'')+diff; }
-  return {now, sync, status, src:()=>src, corr:()=>now()-Date.now()};
+    return 'ما فيه ضبط من الإنترنت حالياً — يمشي على ساعة التلفزيون'+((+S.secFix||+S.rateFix)?' مع التعديل اليدوي':'')+(lastNet?(' · آخر ضبط '+fmt(ago)):'')+diff; }
+  return {now, sync, status, setRate, src:()=>src, corr:()=>now()-Date.now()};
 })();
 
 function brIsTv(){ try{ return !!(BR && BR.isTv()); }catch(e){ return false; } }
@@ -837,7 +849,8 @@ function buildSettings(){
    <div class="f"><label>ضبط الثواني</label><output id="clkSt" style="flex:1">${CLK.status()}</output></div>
    <div class="f"><label></label><button type="button" class="btn" data-act="clkSync">ضبط الآن من الإنترنت</button></div>
    <div class="f"><label>تعديل يدوي (ثانية)</label><button type="button" class="btn" data-act="sec+">+</button><output id="secV" style="min-width:3em;text-align:center;direction:ltr">${(+S.secFix||0)>0?'+':''}${+S.secFix||0}</output><button type="button" class="btn" data-act="sec-">−</button></div>
-   <p class="note" style="opacity:.75;font-size:.8em;margin:.2em 0 .6em">التعديل اليدوي يشتغل بس إذا الشاشة ما قدرت تضبط وقتها من الإنترنت. اضغط + إذا الشاشة متأخرة، و − إذا متقدمة.</p>
+   <div class="f"><label>سرعة ساعة التلفزيون (ثانية باليوم)</label><button type="button" class="btn" data-act="rate+">+</button><output id="rateV" style="min-width:3em;text-align:center;direction:ltr">${(+S.rateFix||0)>0?'+':''}${+S.rateFix||0}</output><button type="button" class="btn" data-act="rate-">−</button></div>
+   <p class="note" style="opacity:.75;font-size:.8em;margin:.2em 0 .6em">التعديل اليدوي يشتغل بس إذا الشاشة ما قدرت تضبط وقتها من الإنترنت. «تعديل يدوي»: اضغط + إذا الشاشة متأخرة الحين، و − إذا متقدمة. «سرعة الساعة»: إذا الشاشة تسبق كل يوم، حط كم ثانية تسبق باليوم (+)، وإذا تتأخر كل يوم حط (−).</p>
 
    <div class="f"><label>نظام الساعة</label>${cyc("iH12",[['1','١٢ ساعة'],['0','٢٤ ساعة']],S.h12?'1':'0')}</div>
    <div class="f"><label>إظهار الثواني</label>${cyc("iSec",[['1','نعم'],['0','لا']],S.showSec?'1':'0')}</div>
@@ -972,6 +985,7 @@ $('set').addEventListener('click',e=>{
   if(b.dataset.theme){S.theme=b.dataset.theme;document.querySelectorAll('.th').forEach(x=>x.classList.toggle('sel',x===b));live();return}
   if(b.dataset.act==='prepNow'){prepForce=Date.now()+S.cardDur*1000;cardShownIdx=-1;closeAll();tick();return}
   if(b.dataset.act==='clkSync'){ const ok=CLK.sync(true); const o=$('clkSt'); if(o) o.textContent=CLK.status(); (typeof toast==='function')&&toast(ok?'تم ضبط الوقت من الإنترنت':'ما قدرت أوصل للإنترنت'); return }
+  if(b.dataset.act==='rate+'||b.dataset.act==='rate-'){ const r=Math.max(-60,Math.min(60,(+S.rateFix||0)+(b.dataset.act==='rate+'?1:-1))); CLK.setRate(r); save(); const o=$('rateV'); if(o) o.textContent=(r>0?'+':'')+r; const st=$('clkSt'); if(st) st.textContent=CLK.status(); tick(); return }
   if(b.dataset.act==='sec+'||b.dataset.act==='sec-'){ S.secFix=Math.max(-120,Math.min(120,(+S.secFix||0)+(b.dataset.act==='sec+'?1:-1))); save(); const o=$('secV'); if(o) o.textContent=(S.secFix>0?'+':'')+S.secFix; const st=$('clkSt'); if(st) st.textContent=CLK.status(); tick(); return }
   if(b.dataset.act==='cardNow'){cardForce=Date.now()+S.cardDur*1000;cardShownIdx=-1;closeAll();tick();return}
   if(b.dataset.act==='resetImg'){S.nameImg='';S.nameImgScale=100;live();buildSettings();showPage(curPage);return}
