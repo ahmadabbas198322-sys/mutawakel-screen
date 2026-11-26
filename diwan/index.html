@@ -1291,6 +1291,12 @@ applyLook(); tick(); syncAdhanSoon();
 setInterval(tick,250);
 fixDigitWidth();
 document.fonts&&document.fonts.ready.then(()=>{fitName();buildTicker();for(const k in _dw) delete _dw[k];fixDigitWidth()});
+/* re-measure digit widths once the real digit font has actually loaded (fonts.ready can resolve before it is even requested,
+   which left some screens measured with the fallback font and spaced differently) */
+(function(){ const re=()=>{ for(const k in _dw) delete _dw[k]; fixDigitWidth(); };
+  try{ const fams=new Set(['hm','cd','ss'].map(id=>{ const el=$(id); if(!el) return ''; const cs=getComputedStyle(el); return cs.fontWeight+' 100px '+cs.fontFamily; }).filter(Boolean));
+    Promise.all([...fams].map(f=>document.fonts.load(f,'0123456789'))).then(re,re); document.fonts.addEventListener('loadingdone',re); }catch(e){}
+  setTimeout(re,3000); setTimeout(re,15000); })();
 try{document.fonts.addEventListener('loadingdone',()=>fitName())}catch(e){}
 </script>
 <script>/* show the screen only once it is laid out and its fonts are loaded (no flash of raw text at startup) */
