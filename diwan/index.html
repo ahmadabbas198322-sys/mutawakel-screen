@@ -476,6 +476,33 @@ function applyLook(){
 }
 function hexA(h,a){const n=parseInt(h.slice(1),16);return `rgba(${n>>16&255},${n>>8&255},${n&255},${a})`}
 /* any calligraphy image (dark ink on white, or transparent PNG) -> trimmed transparent mask, so it takes the theme colour */
+/* ===== calligraphy from Google Drive or any link (TV app: fetched natively, so no CORS issues) ===== */
+const DRIVE_DEF='19V09kOyTrcDWOdWmtNxCoIW72LRgEGFG';
+function driveId(u){ u=String(u||'').trim(); const m=u.match(/\/(?:d|folders)\/([\w-]{20,})/)||u.match(/[?&]id=([\w-]{20,})/); return m?m[1]:(/^[\w-]{20,}$/.test(u)?u:''); }
+function netOK(){ return !!(BR&&BR.fetchData&&BR.fetchText); }
+function driveList(folder){ const id=driveId(folder)||DRIVE_DEF; let h=''; try{ h=String(BR.fetchText('https://drive.google.com/embeddedfolderview?id='+id)||''); }catch(e){}
+  const out=[], re=/id="entry-([\w-]{20,})"[\s\S]*?class="flip-entry-title">([^<]*)</g; let m; while((m=re.exec(h))) out.push({id:m[1],name:m[2].replace(/&amp;/g,'&').trim()}); return {ok:!!h, list:out}; }
+function imgFromB64(b){ return b.startsWith('iVBOR')?'data:image/png;base64,'+b : b.startsWith('/9j/')?'data:image/jpeg;base64,'+b : b.startsWith('UklGR')?'data:image/webp;base64,'+b : b.startsWith('R0lG')?'data:image/gif;base64,'+b : ''; }
+function fetchImage(u){ /* returns a data: URL or '' */
+  u=String(u||'').trim(); if(!u) return ''; if(!/^https?:\/\//i.test(u)) u='https://'+u;
+  const tryGet=x=>{ let b=''; try{ b=String(BR.fetchData(x)||''); }catch(e){} return b; };
+  let id=driveId(u); let b=tryGet(id?('https://drive.google.com/uc?export=download&id='+id):u); let d=b?imgFromB64(b):'';
+  if(!d && b){ /* got a web page (e.g. a short link to a Drive "view" page): look for the file id inside it */
+    let html=''; try{ html=atob(b); }catch(e){} const m=html.match(/\/file\/d\/([\w-]{20,})/)||html.match(/[?&]id=([\w-]{20,})/);
+    if(m){ const b2=tryGet('https://drive.google.com/uc?export=download&id='+m[1]); d=b2?imgFromB64(b2):''; } }
+  return d; }
+function useCalligFrom(u,msgEl){ const say=t=>{ if(msgEl) msgEl.textContent=t; };
+  if(!netOK()){ say('متاح في تطبيق التلفزيون فقط'); return; } say('جاري التحميل…');
+  setTimeout(()=>{ const d=fetchImage(u); if(!d){ say('ما قدرت أحمّل الصورة — تأكد إن الملف مشارك «لأي شخص لديه الرابط» وإنه صورة PNG أو JPG'); return; }
+    prepCallig(d,x=>{ S.nameImg=x; S.nameMode='image'; live(); say('تم تحميل المخطوطة ✓'); }); },50); }
+function driveShow(){ const box=$('drvList'), st=$('drvSt'); if(!box) return;
+  if(!netOK()){ st.textContent='متاح في تطبيق التلفزيون فقط'; return; } st.textContent='جاري قراءة المجلد…'; box.innerHTML='';
+  setTimeout(()=>{ const r=driveList(S.driveFolder||DRIVE_DEF);
+    if(!r.ok){ st.textContent='ما قدرت أفتح المجلد — تأكد من الإنترنت وإن المجلد مشارك «لأي شخص لديه الرابط»'; return; }
+    if(!r.list.length){ st.textContent='المجلد فاضي أو ما فيه ملفات مشاركة'; return; }
+    st.textContent='اختر المخطوطة ('+r.list.length+' ملف):';
+    box.innerHTML=r.list.map(f=>`<button type="button" class="btn" data-act="drvPick" data-id="${f.id}" style="margin:4px">${f.name.replace(/</g,'')}</button>`).join(''); },50); }
+
 function prepCallig(src,done){
   const im=new Image(); im.onload=()=>{
     const W=Math.min(1800,im.width), H=Math.round(im.height*W/im.width), c=document.createElement('canvas'); c.width=W; c.height=H;
@@ -1035,6 +1062,11 @@ function buildSettings(){
    <div class="f"><label for="iName">اسم الديوانية</label><input type="text" id="iName" value="${esc(S.name)}"></div>
    <div class="f"><label>طريقة الاسم</label>${cyc("iMode",[['image','مخطوط (صورة الخط)'],['text','نص بخط من القائمة']],S.nameMode==='text'?'text':'image')}</div>
    <div class="f"><label for="iImg">إضافة مخطوطة الاسم من ملف (صورة)</label><input type="file" id="iImg" accept="image/*"></div>
+   <div class="f"><label>مخطوطة من مجلد Google Drive</label><button type="button" class="btn" data-act="drvShow">عرض ملفات المجلد</button></div>
+   <div class="f" id="drvRow" style="display:block;border:0;padding-top:0"><output id="drvSt" style="display:block;margin:2px 0"></output><div id="drvList" style="display:flex;flex-wrap:wrap"></div></div>
+   <div class="f"><label for="iImgUrl">أو رابط المخطوطة</label><input type="text" id="iImgUrl" dir="ltr" placeholder="tinyurl.com/… أو رابط Drive" style="flex:1"><button type="button" class="btn" data-act="urlImg">تحميل</button></div>
+   <div class="f"><label for="iDrv">رابط المجلد</label><input type="text" id="iDrv" dir="ltr" value="${S.driveFolder||DRIVE_DEF}" style="flex:1"></div>
+   <p class="note" style="opacity:.75;font-size:.8em;margin:.2em 0 .6em">ارفع المخطوطة في المجلد (PNG بخلفية شفافة أفضل)، وخلّ المجلد مشارك «لأي شخص لديه الرابط». بعدها اضغط «عرض ملفات المجلد» واختر الملف.</p>
    <div class="f"><label>حجم المخطوطة (%)</label>${stepper('nameImgScale',40,130,5)}</div>
    <div class="f"><label>رجوع للمخطوطة الأصلية</label><button type="button" class="btn" data-act="resetImg">استرجاع</button></div>
    <div class="f"><label>خط الاسم (لوضع النص)</label>${cyc("iFont",Object.entries(FONTS),S.nameFont)}</div>
@@ -1197,6 +1229,9 @@ $('set').addEventListener('click',e=>{
   if(b.dataset.act==='clkSync'){ const ok=CLK.sync(true); const o=$('clkSt'); if(o) o.textContent=CLK.status(); (typeof toast==='function')&&toast(ok?'تم ضبط الوقت من الإنترنت':'ما قدرت أوصل للإنترنت'); return }
   if(b.dataset.act==='sec+'||b.dataset.act==='sec-'){ S.secFix=Math.max(-120,Math.min(120,(+S.secFix||0)+(b.dataset.act==='sec+'?1:-1))); save(); const o=$('secV'); if(o) o.textContent=(S.secFix>0?'+':'')+S.secFix; const st=$('clkSt'); if(st) st.textContent=CLK.status(); tick(); return }
   if(b.dataset.act==='cardNow'){cardForce=Date.now()+S.cardDur*1000;cardShownIdx=-1;closeAll();tick();return}
+  if(b.dataset.act==='drvShow'){ driveShow(); return }
+  if(b.dataset.act==='drvPick'){ useCalligFrom('https://drive.google.com/file/d/'+b.dataset.id+'/view',$('drvSt')); return }
+  if(b.dataset.act==='urlImg'){ const v=($('iImgUrl')||{}).value; useCalligFrom(v,$('drvSt')); return }
   if(b.dataset.act==='resetImg'){S.nameImg='';S.nameImgScale=100;live();buildSettings();showPage(curPage);return}
   if(b.dataset.sim){simulate(b.dataset.sim);closeAll();return}
   if(b.dataset.adh){ const m=b.dataset.adh;
@@ -1207,6 +1242,7 @@ $('set').addEventListener('click',e=>{
 });
 $('set').addEventListener('input',e=>{
   const t=e.target;
+  if(t.id==='iDrv'){ S.driveFolder=t.value.trim(); save(); return }
   if(t.id==='iImg'){const f=t.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{prepCallig(r.result,u=>{S.nameImg=u;S.nameMode='image';live()})};r.readAsDataURL(f);return}
   setField(t.id,t.value);
 });
