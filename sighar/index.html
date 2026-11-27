@@ -24,7 +24,7 @@ body{background:#ffb703;transition:background .5s}
 .hidden{display:none!important}
 /* home */
 #home h1{font-size:clamp(34px,7vw,72px);color:#fff;text-shadow:0 4px 0 rgba(0,0,0,.15);margin-bottom:3vh}
-.tiles{display:grid;grid-template-columns:repeat(9,minmax(0,1fr));gap:1.3vw;width:min(97vw,1600px)}
+.tiles{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:1.1vw;width:min(97vw,1700px)}
 .tile{border:none;border-radius:26px;padding:2.2vh .5vw;background:#fff;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1vh;font:inherit;font-size:clamp(18px,3vw,34px);color:#333;box-shadow:0 10px 0 rgba(0,0,0,.15);transition:transform .15s}
 .tile .ic{font-size:min(9vh,6vw);line-height:1;height:1.2em;display:flex;align-items:center}
 .tile{font-size:min(3.2vh,2.2vw)!important}
@@ -146,6 +146,8 @@ body{background:#ffb703;transition:background .5s}
   <h1>مرح الصغار</h1>
   <div class="tiles">
     <button class="tile" data-mode="monkey"><span class="ic emo">🐵</span>مغامرة القرد</button>
+    <button class="tile" data-mode="train3d"><span class="ic emo">🚂</span>قطار الحيوانات</button>
+    <button class="tile" data-mode="sub3d"><span class="ic emo">🚢</span>الغوّاصة</button>
     <button class="tile" data-mode="plane3d"><span class="ic emo">✈️</span>الطيارة 3D</button>
     <button class="tile" data-mode="animals"><span class="ic emo">🐮</span>الحيوانات</button>
     <button class="tile" data-mode="letters"><span class="ic big">أ ب</span>الحروف</button>
@@ -232,6 +234,7 @@ const SND={
  yip(){[0,.22].forEach(t0=>V({f:[[0,900],[.08,1500],[.16,800]],dur:.18,filt:{f:[[0,1600]],q:2},vol:.3,t0}))},
  munch(){[0,.25,.5,.75].forEach(t0=>N({dur:.09,filt:{f:[[0,900]],q:2},vol:.35,t0}))},
  hum(){V({type:'sine',f:[[0,95],[1.4,90]],dur:1.5,vol:.45,vib:3,vibRate:5,att:.2})},
+ whistle(){V({type:'sine',f:[[0,880],[.1,900],[1,880]],dur:1.1,vol:.18,vib:6,vibRate:7,att:.05});V({type:'sine',f:[[0,1108],[1,1100]],dur:1.1,vol:.12,att:.05})},
  whoosh(){N({dur:.35,filt:{f:[[0,400],[.35,2500]],q:1.5},vol:.25})}
 };
 /* optional spoken names where the device has an Arabic voice (phones, iPad) */
@@ -337,5 +340,8 @@ goHome();
 <script src="monkey_art.js"></script>
 <script src="monkey.js"></script>
 <script src="plane3d.js"></script>
+<script src="kit3d.js"></script>
+<script src="train3d.js"></script>
+<script src="sub3d.js"></script>
 </body>
 </html>
