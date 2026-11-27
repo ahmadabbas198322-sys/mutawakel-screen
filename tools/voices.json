@@ -502,5 +502,533 @@
 "mk_bye": [
 "ar",
 "مَعَ السَّلامة!"
+],
+"en_go0": [
+"en",
+"Let's fly to A!"
+],
+"en_l0": [
+"en",
+"A!"
+],
+"w_a0": [
+"en",
+"Apple!"
+],
+"w_a1": [
+"en",
+"Ant!"
+],
+"w_a2": [
+"en",
+"Airplane!"
+],
+"en_go1": [
+"en",
+"Let's fly to B!"
+],
+"en_l1": [
+"en",
+"B!"
+],
+"w_b0": [
+"en",
+"Ball!"
+],
+"w_b1": [
+"en",
+"Banana!"
+],
+"w_b2": [
+"en",
+"Bear!"
+],
+"en_go2": [
+"en",
+"Let's fly to C!"
+],
+"en_l2": [
+"en",
+"C!"
+],
+"w_c0": [
+"en",
+"Cat!"
+],
+"w_c1": [
+"en",
+"Car!"
+],
+"w_c2": [
+"en",
+"Cake!"
+],
+"en_go3": [
+"en",
+"Let's fly to D!"
+],
+"en_l3": [
+"en",
+"D!"
+],
+"w_d0": [
+"en",
+"Dog!"
+],
+"w_d1": [
+"en",
+"Duck!"
+],
+"w_d2": [
+"en",
+"Door!"
+],
+"en_go4": [
+"en",
+"Let's fly to E!"
+],
+"en_l4": [
+"en",
+"E!"
+],
+"w_e0": [
+"en",
+"Elephant!"
+],
+"w_e1": [
+"en",
+"Egg!"
+],
+"w_e2": [
+"en",
+"Ear!"
+],
+"en_go5": [
+"en",
+"Let's fly to F!"
+],
+"en_l5": [
+"en",
+"F!"
+],
+"w_f0": [
+"en",
+"Fish!"
+],
+"w_f1": [
+"en",
+"Frog!"
+],
+"w_f2": [
+"en",
+"Flower!"
+],
+"en_go6": [
+"en",
+"Let's fly to G!"
+],
+"en_l6": [
+"en",
+"G!"
+],
+"w_g0": [
+"en",
+"Giraffe!"
+],
+"w_g1": [
+"en",
+"Grapes!"
+],
+"w_g2": [
+"en",
+"Gift!"
+],
+"en_go7": [
+"en",
+"Let's fly to H!"
+],
+"en_l7": [
+"en",
+"H!"
+],
+"w_h0": [
+"en",
+"Horse!"
+],
+"w_h1": [
+"en",
+"Hat!"
+],
+"w_h2": [
+"en",
+"House!"
+],
+"en_go8": [
+"en",
+"Let's fly to I!"
+],
+"en_l8": [
+"en",
+"I!"
+],
+"w_i0": [
+"en",
+"Ice cream!"
+],
+"w_i1": [
+"en",
+"Ice!"
+],
+"w_i2": [
+"en",
+"Island!"
+],
+"en_go9": [
+"en",
+"Let's fly to J!"
+],
+"en_l9": [
+"en",
+"J!"
+],
+"w_j0": [
+"en",
+"Juice!"
+],
+"w_j1": [
+"en",
+"Jacket!"
+],
+"w_j2": [
+"en",
+"Jeans!"
+],
+"en_go10": [
+"en",
+"Let's fly to K!"
+],
+"en_l10": [
+"en",
+"K!"
+],
+"w_k0": [
+"en",
+"Kite!"
+],
+"w_k1": [
+"en",
+"Key!"
+],
+"w_k2": [
+"en",
+"Kangaroo!"
+],
+"en_go11": [
+"en",
+"Let's fly to L!"
+],
+"en_l11": [
+"en",
+"L!"
+],
+"w_l0": [
+"en",
+"Lion!"
+],
+"w_l1": [
+"en",
+"Lemon!"
+],
+"w_l2": [
+"en",
+"Leaf!"
+],
+"en_go12": [
+"en",
+"Let's fly to M!"
+],
+"en_l12": [
+"en",
+"M!"
+],
+"w_m0": [
+"en",
+"Monkey!"
+],
+"w_m1": [
+"en",
+"Moon!"
+],
+"w_m2": [
+"en",
+"Milk!"
+],
+"en_go13": [
+"en",
+"Let's fly to N!"
+],
+"en_l13": [
+"en",
+"N!"
+],
+"w_n0": [
+"en",
+"Nose!"
+],
+"w_n1": [
+"en",
+"Nut!"
+],
+"w_n2": [
+"en",
+"Night!"
+],
+"en_go14": [
+"en",
+"Let's fly to O!"
+],
+"en_l14": [
+"en",
+"O!"
+],
+"w_o0": [
+"en",
+"Orange!"
+],
+"w_o1": [
+"en",
+"Owl!"
+],
+"w_o2": [
+"en",
+"Octopus!"
+],
+"en_go15": [
+"en",
+"Let's fly to P!"
+],
+"en_l15": [
+"en",
+"P!"
+],
+"w_p0": [
+"en",
+"Panda!"
+],
+"w_p1": [
+"en",
+"Pizza!"
+],
+"w_p2": [
+"en",
+"Pig!"
+],
+"en_go16": [
+"en",
+"Let's fly to Q!"
+],
+"en_l16": [
+"en",
+"Q!"
+],
+"w_q0": [
+"en",
+"Queen!"
+],
+"w_q1": [
+"en",
+"Question!"
+],
+"w_q2": [
+"en",
+"Quiet!"
+],
+"en_go17": [
+"en",
+"Let's fly to R!"
+],
+"en_l17": [
+"en",
+"R!"
+],
+"w_r0": [
+"en",
+"Rabbit!"
+],
+"w_r1": [
+"en",
+"Rainbow!"
+],
+"w_r2": [
+"en",
+"Rocket!"
+],
+"en_go18": [
+"en",
+"Let's fly to S!"
+],
+"en_l18": [
+"en",
+"S!"
+],
+"w_s0": [
+"en",
+"Sun!"
+],
+"w_s1": [
+"en",
+"Star!"
+],
+"w_s2": [
+"en",
+"Snake!"
+],
+"en_go19": [
+"en",
+"Let's fly to T!"
+],
+"en_l19": [
+"en",
+"T!"
+],
+"w_t0": [
+"en",
+"Tiger!"
+],
+"w_t1": [
+"en",
+"Tree!"
+],
+"w_t2": [
+"en",
+"Train!"
+],
+"en_go20": [
+"en",
+"Let's fly to U!"
+],
+"en_l20": [
+"en",
+"U!"
+],
+"w_u0": [
+"en",
+"Umbrella!"
+],
+"w_u1": [
+"en",
+"Unicorn!"
+],
+"w_u2": [
+"en",
+"Up!"
+],
+"en_go21": [
+"en",
+"Let's fly to V!"
+],
+"en_l21": [
+"en",
+"V!"
+],
+"w_v0": [
+"en",
+"Van!"
+],
+"w_v1": [
+"en",
+"Violin!"
+],
+"w_v2": [
+"en",
+"Volcano!"
+],
+"en_go22": [
+"en",
+"Let's fly to W!"
+],
+"en_l22": [
+"en",
+"W!"
+],
+"w_w0": [
+"en",
+"Whale!"
+],
+"w_w1": [
+"en",
+"Watermelon!"
+],
+"w_w2": [
+"en",
+"Watch!"
+],
+"en_go23": [
+"en",
+"Let's fly to X!"
+],
+"en_l23": [
+"en",
+"X!"
+],
+"w_x0": [
+"en",
+"Fox!"
+],
+"w_x1": [
+"en",
+"Box!"
+],
+"w_x2": [
+"en",
+"Six!"
+],
+"en_go24": [
+"en",
+"Let's fly to Y!"
+],
+"en_l24": [
+"en",
+"Y!"
+],
+"w_y0": [
+"en",
+"Yo-yo!"
+],
+"w_y1": [
+"en",
+"Yellow!"
+],
+"w_y2": [
+"en",
+"Yacht!"
+],
+"en_go25": [
+"en",
+"Let's fly to Z!"
+],
+"en_l25": [
+"en",
+"Z!"
+],
+"w_z0": [
+"en",
+"Zebra!"
+],
+"w_z1": [
+"en",
+"Zero!"
+],
+"w_z2": [
+"en",
+"Zipper!"
+],
+"en_land": [
+"en",
+"Landing!"
+],
+"en_off": [
+"en",
+"Take off!"
 ]
 }
