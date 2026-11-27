@@ -1,0 +1,20 @@
+name: fetch-exact
+on:
+  push:
+    paths: ['tools/fetch_exact.py']
+permissions:
+  contents: write
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+      - run: python tools/fetch_exact.py
+      - run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add sighar/sounds/animals
+          git commit -m "تبديل صوت القطة الثاني وصوت البطة بتسجيلات أوضح" || echo nothing
+          git pull --rebase || true
+          git push
