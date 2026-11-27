@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>برج الرماة</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Noto+Kufi+Arabic:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+/* VOICE: تحدٍّ سريع للشباب، توتر ورماية، لا طفولية
+   IDEA: برج حراسة عند الغروب، والجمل تطير نحوه من الأفق كألواح حجرية
+   PICTURE: المشهد ثلاثي الأبعاد يملأ الشاشة، والأسهم الخمسة أسفله
+   COLOUR and TYPE: غروب أرجواني وبرتقالي، ولكل سهم لونه — Amiri للكلمات، Noto Kufi للواجهة
+   LAYOUT: شريط علوي، سطر الجملة الأقرب، المشهد، ثم شريط الأسهم */
+:root{color-scheme:dark;--bg:#1d0b26;--glass:rgba(34,13,40,.9);--sand:#f0c873;--teal:#43d6c8;--rose:#ff6b6b;--ink:#fff3e6;--mute:#d2b9c8}
+*{box-sizing:border-box;min-width:0;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font:16px/1.6 "Noto Kufi Arabic",Tahoma,sans-serif;overflow:hidden;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+#c{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
+.hud{position:fixed;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;gap:8px;padding:calc(env(safe-area-inset-top) + 10px) 12px 6px;pointer-events:none;z-index:2}
+.chip{background:var(--glass);border:1px solid #ffffff1f;border-radius:999px;padding:5px 12px;font-size:14px;font-weight:600;display:flex;align-items:center;gap:3px;white-space:nowrap}
+.chip svg{width:16px;height:16px}.chip .lost{opacity:.2}
+#streak{color:var(--sand);margin-inline-end:4px}
+.strip{position:fixed;top:calc(env(safe-area-inset-top) + 52px);left:12px;right:12px;margin:0 auto;max-width:620px;text-align:center;font:700 clamp(20px,5.6vw,28px)/1.6 Amiri,serif;background:var(--glass);border-radius:14px;padding:2px 12px;pointer-events:none;z-index:2;min-height:1.6em}
+.strip:empty{visibility:hidden}
+.strip .ok{color:var(--teal)}.strip .no{color:var(--rose);text-decoration:line-through}
+.toast{position:fixed;top:calc(env(safe-area-inset-top) + 106px);left:12px;right:12px;margin:0 auto;max-width:520px;text-align:center;font-size:15px;font-weight:600;padding:8px 14px;border-radius:14px;background:var(--glass);border:1px solid var(--teal);opacity:0;transform:translateY(-6px);transition:opacity .25s,transform .25s;pointer-events:none;z-index:2}
+.toast.on{opacity:1;transform:none}.toast.no{border-color:var(--rose)}
+.boss{position:fixed;top:calc(env(safe-area-inset-top) + 156px);left:0;right:0;text-align:center;z-index:2;font-weight:800;color:var(--rose);font-size:14px;pointer-events:none}
+.boss span{display:inline-block;width:30px;height:8px;border-radius:4px;background:var(--rose);margin:0 3px;vertical-align:middle;transition:opacity .3s}
+.boss span.x{opacity:.18}
+.bar{position:fixed;left:0;right:0;bottom:0;margin:0 auto;max-width:640px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;padding:10px 10px calc(env(safe-area-inset-bottom) + 10px);background:var(--glass);border-top:2px solid var(--sand);border-radius:20px 20px 0 0;z-index:3}
+button{font:600 13px/1.25 "Noto Kufi Arabic",sans-serif;color:var(--ink);background:#3a1a42;border:2px solid #ffffff1c;border-radius:14px;min-height:58px;padding:6px 2px;cursor:pointer;transition:transform .12s,background .2s,border-color .2s}
+button:active{transform:scale(.95)}
+button:focus-visible{outline:3px solid var(--sand);outline-offset:2px}
+.bar button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.bar button svg{width:26px;height:14px}
+.bar button.sel{border-color:var(--c);background:color-mix(in srgb,var(--c) 28%,#3a1a42)}
+.bar kbd{font:11px sans-serif;opacity:.45}
+.main{background:var(--sand);color:#2a1505;width:100%;font-weight:800;font-size:18px;border:0;min-height:54px}
+.screen{position:fixed;inset:0;display:grid;place-items:center;padding:24px;background:radial-gradient(circle at 50% 35%,rgba(29,11,38,.3),rgba(29,11,38,.93) 70%);z-index:5;overflow:auto}
+[hidden]{display:none!important}
+.panel{max-width:440px;width:100%;text-align:center}
+h1{font:700 clamp(48px,14vw,72px)/1.1 Amiri,serif;color:var(--sand);margin:0;text-wrap:balance}
+h2{font-size:18px;font-weight:600;color:var(--teal);margin:6px 0 16px}
+.legend{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 12px;margin:0 0 14px;font-size:14px}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.legend i{width:12px;height:12px;border-radius:50%;background:var(--c)}
+.rules{list-style:none;padding:0;margin:0 0 20px;font-size:15px;line-height:1.95}
+.rules b{color:var(--sand)}
+.note{font-size:13px;color:var(--mute);margin-top:12px}.note a{color:var(--teal)}
+.big{font:800 52px/1.1 "Noto Kufi Arabic";color:var(--sand);margin:8px 0}
+.stars svg{width:46px;height:46px;margin:0 4px}
+.stats{display:flex;justify-content:center;gap:22px;margin:4px 0 16px;color:var(--mute);font-size:14px}
+.stats b{display:block;color:var(--ink);font-size:20px}
+.mist{text-align:start;background:#ffffff0d;border-radius:14px;padding:10px 14px;margin:0 0 16px;font-size:14px;max-height:34vh;overflow:auto}
+.mist h4{margin:0 0 4px;color:var(--sand);font-size:15px}
+.mist p{margin:6px 0;line-height:1.7}.mist .s{font:700 19px Amiri,serif;display:block}
+#flash{position:fixed;inset:0;background:var(--rose);opacity:0;pointer-events:none;transition:opacity .5s;z-index:4}
+@media (prefers-reduced-motion:reduce){.toast{transition:none}}
+.alt{margin-top:10px;background:transparent;color:var(--sand);border:2px solid var(--sand)}
+.sec{margin-top:10px;width:100%;background:transparent;border:0;color:var(--mute);font-size:15px;min-height:46px;text-decoration:underline}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<header class="hud">
+  <div class="chip" id="shields"></div>
+  <div class="chip" id="wlabel"></div>
+  <div class="chip"><span id="streak"></span><span id="score">٠</span></div>
+</header>
+<div class="strip" id="strip"></div>
+<div class="toast" id="toast"></div>
+<div class="boss" id="boss" hidden></div>
+<nav class="bar" id="bar" aria-label="اختر السهم"></nav>
+
+<div class="screen" id="start">
+  <div class="panel">
+    <h1>برج الرماة</h1>
+    <h2>العالم الثاني: المنصوبات</h2>
+    <ul class="rules">
+      <li>الجمل تطير نحو برجك، <b>أصب المنصوبات فقط</b></li>
+      <li>اختر <b>السهم المناسب</b> لنوع المنصوب</li>
+      <li><b>المس الكلمة أو مرّر إصبعك نحوها</b> فيرتسم مسار السهم إليها، ثم أفلت</li>
+      <li>إصابة غير المنصوب، أو سهم خاطئ، أو منصوب يفلت منك: <b>تخسر درعًا</b></li>
+    </ul>
+    <div class="legend" id="legend"></div>
+    <button class="main" id="go">إلى البرج</button>
+    <p class="note">نموذج تجريبي — ٤ موجات وحارس طائر</p>
+    <button class="sec home">العودة إلى المنصة</button>
+  </div>
+</div>
+
+<div class="screen" id="wave" hidden>
+  <div class="panel">
+    <h2 id="wn" style="font-size:16px;color:var(--mute);margin:0"></h2>
+    <h1 id="wt" style="font-size:clamp(40px,11vw,56px)"></h1>
+    <p id="wh" style="font-size:16px;margin:12px 0 22px"></p>
+    <button class="main" id="wgo">ابدأ الموجة</button>
+  </div>
+</div>
+
+<div class="screen" id="end" hidden>
+  <div class="panel">
+    <h1 id="et"></h1>
+    <div class="stars" id="stars"></div>
+    <p class="big" id="es"></p>
+    <div class="stats"><div><b id="ea"></b>الدقة</div><div><b id="eh"></b>إصابات</div><div><b id="eb"></b>أفضل نتيجة</div></div>
+    <div class="mist" id="mist" hidden></div>
+    <button class="main" id="nextw" hidden>العالم التالي</button>
+    <button class="main alt" id="again">العب مجددًا</button>
+    <button class="sec home">العودة إلى المنصة</button>
+  </div>
+</div>
+<div id="flash"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+{
+const WORLD=2;
+const $=s=>document.querySelector(s);
+const TYPES=[{k:'م',n:'مفعول به',c:'#43d6c8'},{k:'ح',n:'حال',c:'#f0c873'},{k:'ت',n:'تمييز',c:'#ff8fb1'},{k:'ظ',n:'ظرف',c:'#8fb8ff'},{k:'ل',n:'مفعول لأجله',c:'#b8ff8f'}];
+const TN=Object.fromEntries(TYPES.map(t=>[t.k,t]));
+const S=(...a)=>a.map(x=>{const[w,t,n]=x.split('|');return{w,t:t||null,n:n||''}});
+const WAVES=[
+ {name:'الموجة الأولى',title:'منصوب واحد',hint:'في كل جملة منصوب واحد. أصبه بسهمه، واترك الفعل والفاعل يمرّان.',sp:3.4,gap:8,s:[
+  S('قرأَ||فعل ماضٍ','الطالب||فاعل مرفوع','الكتاب|م'),
+  S('شربَ||فعل ماضٍ','الولد||فاعل مرفوع','الماء|م'),
+  S('جاءَ||فعل ماضٍ','الضيف||فاعل مرفوع','مبتسما|ح|يبيّن هيئة الضيف'),
+  S('سافرَ||فعل ماضٍ','أبي||فاعل مرفوع','ليلا|ظ|ظرف زمان')]},
+ {name:'الموجة الثانية',title:'منصوبان معًا',hint:'كل جملة فيها منصوبان، ولكل واحد سهمه. لا تدع أحدهما يفلت.',sp:4,gap:7.5,s:[
+  S('جاءَ||فعل ماضٍ','زيد||فاعل مرفوع','راكبا|ح|يبيّن هيئة زيد','صباحا|ظ|ظرف زمان'),
+  S('وقفَ||فعل ماضٍ','الجنود||فاعل مرفوع','احتراما|ل|يبيّن سبب الوقوف','للقائد||اسم مجرور'),
+  S('أكلتُ||فعل وفاعل','التفاحة|م','جالسا|ح|يبيّن هيئة الآكل'),
+  S('جلسَ||فعل ماضٍ','الطلاب||فاعل مرفوع','أمام|ظ|ظرف مكان','المعلم||مضاف إليه مجرور')]},
+ {name:'الموجة الثالثة',title:'فخاخ متشابهة',hint:'التمييز يزيل الإبهام عن كلمة قبله، والمفعول لأجله يبيّن سبب الفعل.',sp:4.4,gap:7,s:[
+  S('اشتريتُ||فعل وفاعل','رطلا|م','عسلا|ت|يبيّن المقصود بالرطل'),
+  S('رأيتُ||فعل وفاعل','العسل|م','في||حرف جر','الإناء||اسم مجرور'),
+  S('امتلأَ||فعل ماضٍ','الكوب||فاعل مرفوع','ماء|ت|يزيل الإبهام عن الامتلاء'),
+  S('ذاكرتُ||فعل وفاعل','رغبة|ل|يبيّن سبب المذاكرة','في||حرف جر','النجاح||اسم مجرور'),
+  S('طابَ||فعل ماضٍ','زيد||فاعل مرفوع','نفسا|ت|تمييز نسبة')]},
+ {name:'الموجة الرابعة',title:'علامات فرعية',hint:'جمع المؤنث السالم يُنصب بالكسرة، وجمع المذكر السالم بالياء، والأسماء الخمسة بالألف.',sp:4.8,gap:7,s:[
+  S('رأيتُ||فعل وفاعل','المعلمات|م|منصوب بالكسرة لأنه جمع مؤنث سالم','مجتهدات|ح|منصوب بالكسرة لأنه جمع مؤنث سالم'),
+  S('كافأَ||فعل ماضٍ','المدير||فاعل مرفوع','الموظفين|م|منصوب بالياء لأنه جمع مذكر سالم'),
+  S('احترمْ||فعل أمر','أباك|م|منصوب بالألف لأنه من الأسماء الخمسة'),
+  S('شاهدتُ||فعل وفاعل','اللاعبين|م|منصوب بالياء','فرحين|ح|منصوب بالياء')]},
+ {boss:true,name:'المعركة الأخيرة',title:'الحارس الطائر',hint:'يحمل جملة طويلة تتمايل يمينًا ويسارًا، وفيها أربعة منصوبات مختلفة. أسقطه.',sp:2.3,gap:99,s:[
+  S('زارَ||فعل ماضٍ','المعلمون||فاعل مرفوع بالواو','المتحف|م','صباحا|ظ|ظرف زمان','رغبة|ل|يبيّن سبب الزيارة','في||حرف جر','العلم||اسم مجرور','فرحين|ح|منصوب بالياء')]}
+];
+const MAXS=5;
+const st={wave:0,si:0,timer:0,shields:MAXS,score:0,streak:0,hits:0,wrong:0,missed:0,sel:0,run:false,mist:[]};
+const ar=n=>n.toLocaleString('ar');
+
+/* ---------- المشهد ---------- */
+const cv=$('#c');
+const ren=new THREE.WebGLRenderer({canvas:cv,antialias:true});
+ren.setPixelRatio(Math.min(devicePixelRatio,2));
+const scene=new THREE.Scene();
+scene.fog=new THREE.Fog(0x9a4450,40,190);
+const cam=new THREE.PerspectiveCamera(58,1,.1,700);
+{const c=document.createElement('canvas');c.width=4;c.height=256;const g=c.getContext('2d'),gr=g.createLinearGradient(0,0,0,256);
+ gr.addColorStop(0,'#13081f');gr.addColorStop(.36,'#4a1d4a');gr.addColorStop(.47,'#c8566a');gr.addColorStop(.5,'#f2925a');gr.addColorStop(.54,'#8a3446');gr.addColorStop(1,'#2a0f20');
+ g.fillStyle=gr;g.fillRect(0,0,4,256);
+ scene.add(new THREE.Mesh(new THREE.SphereGeometry(340,32,16),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(c),side:THREE.BackSide,fog:false})))}
+const sun=new THREE.Mesh(new THREE.SphereGeometry(22,32,20),new THREE.MeshBasicMaterial({color:0xffb46a,fog:false}));sun.position.set(-20,6,-320);scene.add(sun);
+scene.add(new THREE.HemisphereLight(0xffc89a,0x2a1030,.85));
+const sunL=new THREE.DirectionalLight(0xffa060,.9);sunL.position.set(-10,12,-60);scene.add(sunL);
+const fillL=new THREE.DirectionalLight(0xd8c0ff,.45);fillL.position.set(4,14,12);scene.add(fillL);
+const M=(c,e=0)=>new THREE.MeshStandardMaterial({color:c,roughness:.9,emissive:e?c:0,emissiveIntensity:e});
+const ground=new THREE.Mesh(new THREE.PlaneGeometry(900,900),M(0x6a2e3a));ground.rotation.x=-Math.PI/2;scene.add(ground);
+const dune=M(0x542433);for(let i=0;i<40;i++){const s=10+Math.random()*26,c=new THREE.Mesh(new THREE.ConeGeometry(s,s*.6,6),dune);
+ const a=Math.random()*Math.PI*2,r=40+Math.random()*200;c.position.set(Math.cos(a)*r,s*.3,Math.sin(a)*r-60);c.rotation.y=Math.random()*3;scene.add(c)}
+const towerM=M(0x8a6474);
+const tower=new THREE.Mesh(new THREE.CylinderGeometry(2.6,3.4,12,20),towerM);tower.position.y=6;scene.add(tower);
+for(let i=0;i<12;i++){const a=i/12*Math.PI*2,b=new THREE.Mesh(new THREE.BoxGeometry(.9,.9,.6),towerM);b.position.set(Math.cos(a)*2.4,12.45,Math.sin(a)*2.4);b.rotation.y=-a;scene.add(b)}
+for(let i=0;i<4;i++){const t=new THREE.Mesh(new THREE.SphereGeometry(.22,10,8),M(0xffc070,1.5));const a=i/4*Math.PI*2+.4;t.position.set(Math.cos(a)*2.9,10.6,Math.sin(a)*2.9);scene.add(t)}
+
+/* الرامي */
+const pl=new THREE.Group();pl.position.set(0,12,.6);
+const body=new THREE.Mesh(new THREE.CylinderGeometry(.3,.52,1.3,16),M(0x7b2d5a));body.position.y=.85;
+const head=new THREE.Mesh(new THREE.SphereGeometry(.3,18,14),M(0xf3d6a8));head.position.y=1.78;
+const cap=new THREE.Mesh(new THREE.SphereGeometry(.33,18,10,0,Math.PI*2,0,Math.PI/2),M(0xf4f1ff));cap.position.y=1.85;
+const bow=new THREE.Mesh(new THREE.TorusGeometry(.55,.045,6,24,Math.PI),M(0xf0c873,.4));bow.position.set(.45,1.25,-.35);bow.rotation.set(0,Math.PI/2,Math.PI/2);
+pl.add(body,head,cap,bow);scene.add(pl);
+
+/* الطائر الحارس */
+const bird=new THREE.Group();
+const bm=new THREE.MeshStandardMaterial({color:0xc0244a,emissive:0xc0244a,emissiveIntensity:.5,flatShading:true});
+const bb=new THREE.Mesh(new THREE.OctahedronGeometry(1.2,0),bm);bb.scale.set(1,.7,1.7);bird.add(bb);
+const eye=new THREE.Mesh(new THREE.SphereGeometry(.28,12,10),new THREE.MeshBasicMaterial({color:0xfff1c9}));eye.position.set(0,.2,1.7);bird.add(eye);
+const wings=[-1,1].map(s=>{const p=new THREE.Group();const w=new THREE.Mesh(new THREE.BoxGeometry(3.4,.12,1.4),bm);w.position.x=s*1.9;p.add(w);bird.add(p);p.userData.s=s;return p});
+bird.visible=false;scene.add(bird);
+let bossHP=0,bossMax=0,birdFall=false,birdVy=0,birdFlash=0;
+
+/* الكلمات */
+const rows=[];
+const FONT='700 110px Amiri, serif';
+function paint(o,s){const x=o.c.getContext('2d'),W=o.c.width,H=o.c.height;x.clearRect(0,0,W,H);
+ const col=s==='ok'?'#43d6c8':s==='bad'?'#ff6b6b':'#f0c873';
+ x.fillStyle=s==='idle'?'rgba(36,14,44,.92)':s==='ok'?'rgba(14,62,60,.94)':'rgba(74,16,32,.94)';x.strokeStyle=col;x.lineWidth=7;
+ x.beginPath();x.roundRect?x.roundRect(6,6,W-12,H-12,30):x.rect(6,6,W-12,H-12);x.fill();x.stroke();
+ x.font=FONT;x.direction='rtl';x.textAlign='center';x.textBaseline='middle';x.fillStyle=s==='idle'?'#fff3e0':col;x.fillText(o.w,W/2,H/2+6);
+ o.tex.needsUpdate=true}
+function makeWord(o){const c=document.createElement('canvas');const x=c.getContext('2d');x.font=FONT;
+ c.width=Math.ceil(x.measureText(o.w).width)+90;c.height=180;
+ const tex=new THREE.CanvasTexture(c);tex.minFilter=THREE.LinearFilter;tex.generateMipmaps=false;
+ const mat=new THREE.MeshBasicMaterial({map:tex,transparent:true,fog:false,depthWrite:false});
+ const w=c.width/180*1.3,m=new THREE.Mesh(new THREE.PlaneGeometry(w,1.3),mat);
+ Object.assign(o,{c,tex,mat,m,width:w,alive:true,dying:0,state:'idle'});m.userData.word=o;paint(o,'idle');return o}
+function spawnRow(words,sp,boss){
+ const g=new THREE.Group(),ws=words.map(w=>makeWord({...w})),lines=[];
+ for(let i=0;i<ws.length;i+=4)lines.push(ws.slice(i,i+4));
+ lines.forEach((ln,li)=>{const gx=.35,tot=ln.reduce((a,o)=>a+o.width,0)+gx*(ln.length-1);let x=tot/2;
+  ln.forEach(o=>{o.bx=x-o.width/2;o.by=-li*1.75;o.m.position.set(o.bx,o.by,0);x-=o.width+gx;g.add(o.m)})});
+ const used=new Set(rows.map(r=>r.slot));let slot=0;while(used.has(slot))slot++;
+ g.position.set(0,13.7+(lines.length>1?.9:0)+slot*2.6,-78);scene.add(g);
+ const r={g,ws,sp,boss,slot,text:words.map(w=>w.w).join(' ')};rows.push(r);
+ if(boss){bossMax=bossHP=ws.filter(o=>o.t).length;birdFall=false;birdVy=0;bird.visible=true;bird.rotation.set(0,0,0)}
+ renderStrip();hud();return r}
+function renderStrip(){const r=rows[0];
+ $('#strip').innerHTML=r?r.ws.map(o=>`<span class="${o.state==='ok'?'ok':o.state==='bad'?'no':''}">${o.w}</span>`).join(' '):''}
+
+/* ---------- الواجهة ---------- */
+const shieldSVG=c=>`<svg viewBox="0 0 24 24" class="${c}"><path fill="#43d6c8" d="M12 2l8 3v6c0 5-3.4 9.3-8 11-4.6-1.7-8-6-8-11V5z"/></svg>`;
+const starSVG=on=>`<svg viewBox="0 0 24 24"><path fill="${on?'#f0c873':'#ffffff26'}" d="M12 2l3 6.6 7.2.8-5.4 4.9 1.5 7.1L12 17.8 5.7 21.4l1.5-7.1L1.8 9.4 9 8.6z"/></svg>`;
+const arrowSVG=c=>`<svg viewBox="0 0 26 14"><path d="M2 7h18" stroke="${c}" stroke-width="2.6" stroke-linecap="round"/><path d="M14 2l7 5-7 5" fill="none" stroke="${c}" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/></svg>`;
+$('#bar').innerHTML=TYPES.map((t,i)=>`<button data-i="${i}" style="--c:${t.c}" aria-pressed="false">${arrowSVG(t.c)}<span>${t.n}</span><kbd>${i+1}</kbd></button>`).join('');
+$('#legend').innerHTML=TYPES.map(t=>`<span style="--c:${t.c}"><i></i>${t.n}</span>`).join('');
+function select(i){st.sel=i;[...$('#bar').children].forEach((b,j)=>{b.classList.toggle('sel',j===i);b.setAttribute('aria-pressed',j===i)})}
+$('#bar').addEventListener('click',e=>{const b=e.target.closest('button');if(b)select(+b.dataset.i)});
+addEventListener('keydown',e=>{const n=+e.key;if(n>=1&&n<=5)select(n-1)});
+select(0);
+function hud(){
+ $('#shields').innerHTML=Array.from({length:MAXS},(_,i)=>shieldSVG(i<st.shields?'':'lost')).join('');
+ const w=WAVES[st.wave];$('#wlabel').textContent=w.boss?'الحارس':`الموجة ${ar(st.wave+1)} من ${ar(WAVES.length-1)}`;
+ $('#score').textContent=ar(st.score);$('#streak').textContent=st.streak>=2?`×${ar(st.streak)}`:'';
+ const showB=w.boss&&bird.visible&&!birdFall;$('#boss').hidden=!showB;
+ if(showB)$('#boss').innerHTML='الحارس الطائر '+Array.from({length:bossMax},(_,i)=>`<span class="${i>=bossHP?'x':''}"></span>`).join('');
+}
+let toastT=0;
+function toast(msg,ok){const t=$('#toast');t.textContent=msg;t.classList.toggle('no',!ok);t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),2200)}
+let shake=0;
+function damage(){st.shields--;st.streak=0;shake=.6;const f=$('#flash');f.style.transition='none';f.style.opacity=.32;
+ requestAnimationFrame(()=>{f.style.transition='';f.style.opacity=0});hud();if(st.shields<=0)end(false)}
+
+/* الرماية */
+const arrows=[];
+function arrowFly(to,col){const m=new THREE.Mesh(new THREE.BoxGeometry(.08,.08,1.5),new THREE.MeshBasicMaterial({color:col,fog:false}));
+ const from=new THREE.Vector3(.45,13.3,0);m.position.copy(from);m.lookAt(to);scene.add(m);arrows.push({m,from,to:to.clone(),t:0});bow.userData.kick=1}
+function fire(o,row,si){
+ o.alive=false;const sel=TYPES[si];
+ let ok=false,msg;
+ if(o.t===sel.k){ok=true;st.streak++;st.hits++;
+  const pts=Math.round((100+Math.max(0,-row.g.position.z)*3)*(1+Math.min(st.streak-1,4)*.25));st.score+=pts;
+  msg=`+${ar(pts)}  «${o.w}» ${sel.n}${o.n?' — '+o.n:''}`;
+  if(row.boss){bossHP--;birdFlash=1;if(bossHP<=0)birdFall=true}
+ }else{st.wrong++;
+  msg=o.t?`«${o.w}» ${TN[o.t].n} وليس ${sel.n}`:`«${o.w}» ${o.n}، ليس منصوبًا`;
+  st.mist.push({s:row.text,w:o.w,why:o.t?`${TN[o.t].n}${o.n?' — '+o.n:''}، واخترتَ ${sel.n}`:`${o.n}، وليس منصوبًا`});
+ }
+ o.state=ok?'ok':'bad';
+ paint(o,o.state);o.dying=.001;
+ toast(msg,ok);renderStrip();hud();if(!ok)damage();
+}
+function towerHit(o,r){o.alive=false;st.missed++;
+ st.mist.push({s:r.text,w:o.w,why:`فاتك: ${TN[o.t].n}${o.n?' — '+o.n:''}`});
+ toast(`فاتك «${o.w}» — ${TN[o.t].n}`,false);damage()}
+/* التصويب بالسحب */
+const ORIG=new THREE.Vector3(.45,13.3,-.2),GRAV=16,STEP=.0125;
+const dotM=new THREE.MeshBasicMaterial({color:0xffffff,fog:false,transparent:true,opacity:.95,depthTest:false});
+const dotG=new THREE.SphereGeometry(.1,8,6);
+const dots=Array.from({length:30},()=>{const m=new THREE.Mesh(dotG,dotM);m.visible=false;m.renderOrder=5;scene.add(m);return m});
+const markM=new THREE.MeshBasicMaterial({color:0xffffff,fog:false,depthTest:false});
+const mark=new THREE.Mesh(new THREE.TorusGeometry(.4,.08,8,28),markM);mark.visible=false;mark.renderOrder=6;scene.add(mark);
+const nockM=new THREE.MeshBasicMaterial({color:0xffffff});
+const nock=new THREE.Mesh(new THREE.BoxGeometry(.08,.08,1.4),nockM);nock.visible=false;scene.add(nock);
+let drag=null;const flying=[];
+const pv=new THREE.Vector3();
+function pickWord(x,y){const b=cv.getBoundingClientRect();let best=null,bd=1e9;
+ rows.forEach(r=>r.ws.forEach(o=>{if(!o.alive)return;o.m.getWorldPosition(pv);pv.project(cam);
+  const sx=(pv.x+1)/2*b.width+b.left,sy=(1-pv.y)/2*b.height+b.top;
+  const d=Math.hypot(sx-x,sy-y);if(d<bd){bd=d;best={o,r}}}));
+ return bd<Math.max(70,Math.min(W,H)*.16)?best:null}
+function arcPt(a,c,b,t){const u=1-t;return new THREE.Vector3(u*u*a.x+2*u*t*c.x+t*t*b.x,u*u*a.y+2*u*t*c.y+t*t*b.y,u*u*a.z+2*u*t*c.z+t*t*b.z)}
+function ctrlOf(a,b){const c=a.clone().lerp(b,.5);c.y+=a.distanceTo(b)*.18;return c}
+function predict(){
+ const tg=drag.tg=pickWord(drag.x,drag.y);if(!tg){hideAim();return}
+ const col=TYPES[st.sel].c;dotM.color.set(col);markM.color.set(col);nockM.color.set(col);
+ const to=new THREE.Vector3();tg.o.m.getWorldPosition(to);const c=ctrlOf(ORIG,to);
+ dots.forEach((d,i)=>{const t=(i+1)/(dots.length+1);d.position.copy(arcPt(ORIG,c,to,t));d.scale.setScalar(1-t*.5);d.visible=i%2===0});
+ mark.visible=true;mark.position.copy(to);mark.position.z+=.05;mark.lookAt(cam.position);mark.scale.setScalar(1.3+Math.sin(T*10)*.08);
+ const dir=arcPt(ORIG,c,to,.05).sub(ORIG).normalize();nock.visible=true;nock.position.copy(ORIG).addScaledVector(dir,-.4);nock.lookAt(nock.position.clone().add(dir));
+}
+function hideAim(){dots.forEach(d=>d.visible=false);mark.visible=false;nock.visible=false}
+function launch(tg){const m=new THREE.Mesh(new THREE.BoxGeometry(.09,.09,1.5),new THREE.MeshBasicMaterial({color:TYPES[st.sel].c,fog:false}));
+ m.position.copy(ORIG);scene.add(m);tg.o.alive=false;flying.push({m,o:tg.o,r:tg.r,sel:st.sel,t:0,prev:ORIG.clone()});bow.userData.kick=1}
+cv.addEventListener('pointerdown',e=>{if(!st.run)return;drag={x:e.clientX,y:e.clientY,id:e.pointerId,tg:null};try{cv.setPointerCapture(e.pointerId)}catch(_){}});
+cv.addEventListener('pointermove',e=>{if(drag&&e.pointerId===drag.id){drag.x=e.clientX;drag.y=e.clientY}});
+cv.addEventListener('pointerup',e=>{if(!drag||e.pointerId!==drag.id)return;const d=drag;drag=null;hideAim();
+ if(!st.run)return;const tg=pickWord(d.x,d.y);if(tg)launch(tg)});
+cv.addEventListener('pointercancel',()=>{drag=null;hideAim()});
+function updateArrows(dt){
+ for(let i=flying.length-1;i>=0;i--){const a=flying[i];a.t=Math.min(1,a.t+dt*3.2);
+  const to=new THREE.Vector3();a.o.m.getWorldPosition(to);const p=arcPt(ORIG,ctrlOf(ORIG,to),to,a.t);
+  a.m.position.copy(p);a.m.lookAt(p.clone().add(p.clone().sub(a.prev)));a.prev=p;
+  if(a.t>=1){scene.remove(a.m);flying.splice(i,1);fire(a.o,a.r,a.sel)}}
+}
+
+/* الموجات */
+function showWave(){const w=WAVES[st.wave];$('#wn').textContent=w.name;$('#wt').textContent=w.title;$('#wh').textContent=w.hint;$('#wave').hidden=false;hud()}
+$('#wgo').addEventListener('click',()=>{$('#wave').hidden=true;st.si=0;st.timer=99;st.run=true});
+function clearRows(){rows.splice(0).forEach(r=>scene.remove(r.g));arrows.splice(0).forEach(a=>scene.remove(a.m));flying.splice(0).forEach(a=>scene.remove(a.m));drag=null;hideAim();renderStrip()}
+function end(win){
+ if(!st.run&&!win)return;st.run=false;clearRows();bird.visible=false;$('#boss').hidden=true;
+ const tot=st.hits+st.wrong+st.missed,acc=tot?Math.round(st.hits/tot*100):0;let best=st.score;
+ try{best=Math.max(best,+localStorage.getItem('nahw2-best')||0);localStorage.setItem('nahw2-best',best)}catch(e){}
+ const n=!win?(acc>=50?1:0):acc>=90?3:acc>=70?2:1;
+ $('#et').textContent=win?'صمد البرج!':'سقط البرج';
+ $('#stars').innerHTML=[0,1,2].map(i=>starSVG(i<n)).join('');
+ try{const K='mt-nahw',P=JSON.parse(localStorage.getItem(K)||'{}'),o=P[WORLD]||{s:0,b:0};P[WORLD]={s:Math.max(o.s,win?n:0),b:Math.max(o.b,st.score)};localStorage.setItem(K,JSON.stringify(P))}catch(e){}
+ $('#nextw').hidden=!(win&&WORLD<4);
+ $('#es').textContent=ar(st.score);$('#ea').textContent=ar(acc)+'٪';$('#eh').textContent=ar(st.hits);$('#eb').textContent=ar(best);
+ const ms=st.mist.slice(-6);$('#mist').hidden=!ms.length;
+ $('#mist').innerHTML='<h4>راجع أخطاءك</h4>'+ms.map(m=>`<p><span class="s">${m.s}</span>«${m.w}»: ${m.why}</p>`).join('');
+ $('#end').hidden=false;
+}
+function reset(){clearRows();Object.assign(st,{wave:0,si:0,timer:0,shields:MAXS,score:0,streak:0,hits:0,wrong:0,missed:0,run:false,mist:[]});
+ bird.visible=false;birdFall=false;hud()}
+$('#go').addEventListener('click',()=>{$('#start').hidden=true;reset();showWave()});
+$('#again').addEventListener('click',()=>{$('#end').hidden=true;reset();showWave()});
+
+/* ---------- الحلقة ---------- */
+let W=0,H=0;
+function resize(){W=innerWidth;H=innerHeight;ren.setSize(W,H,false);cam.aspect=W/H;
+ const port=cam.aspect<.8;cam.fov=port?64:52;cam.position.set(0,port?15.6:15.2,port?9:7);cam.updateProjectionMatrix()}
+const ro=new ResizeObserver(resize);ro.observe(document.body);resize();
+let last=performance.now(),T=0;
+function loop(now){
+ const dt=Math.min(.05,(now-last)/1000);last=now;T+=dt;
+ if(st.run){const w=WAVES[st.wave];st.timer+=dt;
+  if(st.si<w.s.length&&st.timer>=w.gap){spawnRow(w.s[st.si],w.sp,!!w.boss);st.si++;st.timer=0}
+  if(st.si>=w.s.length&&!rows.length){st.run=false;bird.visible=false;
+   if(st.wave<WAVES.length-1){st.wave++;setTimeout(showWave,900)}else setTimeout(()=>end(true),700)}}
+ for(let i=rows.length-1;i>=0;i--){const r=rows[i];
+  if(st.run)r.g.position.z+=r.sp*dt;
+  if(r.boss)r.g.position.x=Math.sin(T*.9)*1.8;
+  r.ws.forEach(o=>{
+   if(o.dying>0){o.dying+=dt*2.4;o.m.scale.setScalar(1+o.dying*.5);o.mat.opacity=Math.max(0,1-o.dying);if(o.dying>=1){o.m.visible=false;o.dying=-1}}
+   else if(o.alive)o.m.position.y=o.by+Math.sin(T*2.2+o.bx)*.12});
+  if(r.boss&&bird.visible&&!birdFall)bird.position.set(r.g.position.x,r.g.position.y+3.2,r.g.position.z-1.5);
+  if(r.g.position.z>-3){r.ws.forEach(o=>{if(o.alive&&o.t)towerHit(o,r)});scene.remove(r.g);rows.splice(i,1);renderStrip();hud()}
+ }
+ if(bird.visible){wings.forEach(p=>p.rotation.z=p.userData.s*Math.sin(T*(birdFall?14:6))*.5);
+  birdFlash=Math.max(0,birdFlash-dt*2.5);bm.emissiveIntensity=.5+birdFlash*1.5;
+  if(birdFall){birdVy-=dt*16;bird.position.y+=birdVy*dt;bird.rotation.z+=dt*3;if(bird.position.y<-4)bird.visible=false;hud()}}
+ if(drag&&st.run)predict();
+ updateArrows(dt);
+ for(let i=arrows.length-1;i>=0;i--){const a=arrows[i];a.t+=dt*5.5;a.m.position.lerpVectors(a.from,a.to,Math.min(1,a.t));if(a.t>=1){scene.remove(a.m);arrows.splice(i,1)}}
+ bow.userData.kick=Math.max(0,(bow.userData.kick||0)-dt*5);bow.position.z=-.35+bow.userData.kick*.2;
+ shake=Math.max(0,shake-dt*1.8);
+ const bx=cam.position.x;cam.position.x=(Math.random()-.5)*shake;
+ cam.lookAt(cam.position.x*.5,13.1,-22);
+ ren.render(scene,cam);requestAnimationFrame(loop);
+}
+hud();
+(document.fonts?document.fonts.load(FONT):Promise.resolve()).catch(()=>{});
+requestAnimationFrame(loop);
+}
+</script>
+<script>{const go=h=>{try{location.hash=h}catch(e){}location.reload()};
+document.querySelectorAll('.home').forEach(b=>b.addEventListener('click',()=>go('')));
+document.getElementById('nextw').addEventListener('click',()=>go('world-3'));}</script>
+</body>
+</html>

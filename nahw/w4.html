@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>قلعة الانقلاب</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Noto+Kufi+Arabic:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+/* VOICE: قاعة سحرية متوترة، الوقت يسقط مع الكلمات
+   IDEA: قلعة حجرية خضراء داكنة، الناسخ كتلة ذهبية تسقط على الجملة فتدور القاعة
+   PICTURE: كتل الجملة معلّقة تهبط نحو الأرض، والبطاقة أسفلها
+   COLOUR and TYPE: حجر أخضر رمادي، مشاعل برتقالية، ذهب للناسخ — Amiri للكلمات، Noto Kufi للواجهة
+   LAYOUT: شريط علوي، المشهد، بطاقة فيها الناسخ وكلمات تتبدّل حركاتها وزر التثبيت */
+:root{color-scheme:dark;--bg:#0f1a1a;--glass:rgba(14,28,30,.93);--sand:#f0c873;--teal:#43d6c8;--rose:#ff6b6b;--ink:#eef6f2;--mute:#a9c2bb}
+*{box-sizing:border-box;min-width:0;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font:16px/1.6 "Noto Kufi Arabic",Tahoma,sans-serif;overflow:hidden;user-select:none;-webkit-user-select:none}
+#c{position:fixed;inset:0;width:100%;height:100%;display:block}
+.hud{position:fixed;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;gap:8px;padding:calc(env(safe-area-inset-top) + 10px) 12px 6px;pointer-events:none;z-index:2}
+.chip{background:var(--glass);border:1px solid #ffffff1f;border-radius:999px;padding:5px 12px;font-size:14px;font-weight:600;display:flex;align-items:center;gap:3px;white-space:nowrap}
+.chip svg{width:18px;height:18px}.chip .lost{opacity:.22}
+#streak{color:var(--sand);margin-inline-end:4px}
+#card{position:fixed;left:0;right:0;bottom:0;margin:0 auto;max-width:640px;background:var(--glass);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-top:2px solid var(--sand);border-radius:22px 22px 0 0;padding:12px 14px calc(env(safe-area-inset-bottom) + 14px);transform:translateY(115%);transition:transform .45s cubic-bezier(.2,.8,.2,1);z-index:3}
+#card.on{transform:none}
+.timer{height:6px;border-radius:6px;background:#ffffff1a;overflow:hidden;margin:2px 4px 10px}
+.timer i{display:block;height:100%;width:100%;background:var(--teal);margin-inline-start:auto}
+.ask{margin:0 0 8px;text-align:center;color:var(--mute);font-size:14px}
+.line{display:flex;justify-content:center;align-items:center;gap:8px;margin:0 0 10px;flex-wrap:wrap}
+.nas{font:700 28px/1.3 Amiri,serif;color:#2a1a05;background:var(--sand);border-radius:12px;padding:6px 14px}
+button{font:600 16px "Noto Kufi Arabic",sans-serif;color:var(--ink);background:#21403d;border:2px solid #ffffff22;border-radius:14px;min-height:52px;padding:6px 14px;cursor:pointer;transition:transform .12s,background .2s,border-color .2s}
+button:active{transform:scale(.95)}
+button:focus-visible{outline:3px solid var(--sand);outline-offset:2px}
+.wb{font:700 28px/1.3 Amiri,serif;min-width:96px;position:relative;padding-bottom:12px}
+.wb::after{content:"المس لتغيير الحركة";position:absolute;bottom:2px;left:0;right:0;font:400 10px "Noto Kufi Arabic";color:var(--mute)}
+.wb.fixed{background:transparent;border-style:dashed;opacity:.75;cursor:default}
+.wb.fixed::after{content:"ثابتة"}
+.wb.ok{border-color:var(--teal);color:var(--teal)}.wb.no{border-color:var(--rose);color:var(--rose)}
+.main{background:var(--sand);color:#2a1505;width:100%;font-weight:800;font-size:18px;border:0;min-height:54px}
+.main:disabled{opacity:.45}
+.res{text-align:center}
+.res h3{margin:0;font-size:21px;font-weight:800}
+.res .s{font:700 30px/1.6 Amiri,serif;margin:0}
+.res p{margin:4px 0 14px;font-size:15px}
+.res .pts{color:var(--sand);font-weight:800}
+.screen{position:fixed;inset:0;display:grid;place-items:center;padding:24px;background:radial-gradient(circle at 50% 35%,rgba(15,26,26,.35),rgba(15,26,26,.94) 70%);z-index:5;overflow:auto}
+[hidden]{display:none!important}
+.panel{max-width:440px;width:100%;text-align:center}
+h1{font:700 clamp(46px,13vw,70px)/1.1 Amiri,serif;color:var(--sand);margin:0;text-wrap:balance}
+h2{font-size:18px;font-weight:600;color:var(--teal);margin:6px 0 16px}
+.rules{list-style:none;padding:0;margin:0 0 20px;font-size:15px;line-height:1.95}
+.rules b{color:var(--sand)}
+.note{font-size:13px;color:var(--mute);margin-top:12px}.note a{color:var(--teal)}
+.big{font:800 52px/1.1 "Noto Kufi Arabic";color:var(--sand);margin:8px 0}
+.stars svg{width:46px;height:46px;margin:0 4px}
+.stats{display:flex;justify-content:center;gap:22px;margin:4px 0 16px;color:var(--mute);font-size:14px}
+.stats b{display:block;color:var(--ink);font-size:20px}
+.mist{text-align:start;background:#ffffff0d;border-radius:14px;padding:10px 14px;margin:0 0 16px;font-size:14px;max-height:34vh;overflow:auto}
+.mist h4{margin:0 0 4px;color:var(--sand);font-size:15px}
+.mist p{margin:6px 0;line-height:1.7}.mist .s{font:700 19px Amiri,serif;display:block}
+#flash{position:fixed;inset:0;background:var(--rose);opacity:0;pointer-events:none;transition:opacity .5s;z-index:4}
+@media (prefers-reduced-motion:reduce){#card{transition:none}}
+.alt{margin-top:10px;background:transparent;color:var(--sand);border:2px solid var(--sand)}
+.sec{margin-top:10px;width:100%;background:transparent;border:0;color:var(--mute);font-size:15px;min-height:46px;text-decoration:underline}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<header class="hud">
+  <div class="chip" id="hearts"></div>
+  <div class="chip" id="hlabel"></div>
+  <div class="chip"><span id="streak"></span><span id="score">٠</span></div>
+</header>
+
+<section id="card" aria-live="polite">
+  <div class="timer" id="timer"><i></i></div>
+  <div id="q">
+    <p class="ask" id="ask"></p>
+    <div id="lines"></div>
+    <button class="main" id="lock">ثبّت الحركات</button>
+  </div>
+  <div class="res" id="res" hidden>
+    <h3 id="rt"></h3>
+    <p class="s" id="rs"></p>
+    <p id="rx"></p>
+    <button class="main" id="next">تابع</button>
+  </div>
+</section>
+
+<div class="screen" id="start">
+  <div class="panel">
+    <h1>قلعة الانقلاب</h1>
+    <h2>العالم الرابع: النواسخ</h2>
+    <ul class="rules">
+      <li>جملة اسمية معلّقة، ثم <b>يسقط عليها ناسخ</b> فتدور القاعة</li>
+      <li><b>المس كل كلمة</b> لتتبدّل حركتها حتى تصح، ثم <b>ثبّت</b></li>
+      <li>الكتل تهبط، فإن <b>ارتطمت بالأرض</b> قبل التثبيت خسرت قلبًا</li>
+    </ul>
+    <button class="main" id="go">ادخل القلعة</button>
+    <p class="note">نموذج تجريبي — ٤ قاعات وحارس</p>
+    <button class="sec home">العودة إلى المنصة</button>
+  </div>
+</div>
+
+<div class="screen" id="intro" hidden>
+  <div class="panel">
+    <h2 id="in" style="font-size:16px;color:var(--mute);margin:0"></h2>
+    <h1 id="it" style="font-size:clamp(40px,11vw,56px)"></h1>
+    <p id="ih" style="font-size:16px;margin:12px 0 22px"></p>
+    <button class="main" id="igo">ابدأ</button>
+  </div>
+</div>
+
+<div class="screen" id="end" hidden>
+  <div class="panel">
+    <h1 id="et"></h1>
+    <div class="stars" id="stars"></div>
+    <p class="big" id="es"></p>
+    <div class="stats"><div><b id="ea"></b>الدقة</div><div><b id="eb"></b>أفضل نتيجة</div></div>
+    <div class="mist" id="mist" hidden></div>
+    <button class="main" id="nextw" hidden>العالم التالي</button>
+    <button class="main alt" id="again">العب مجددًا</button>
+    <button class="sec home">العودة إلى المنصة</button>
+  </div>
+</div>
+<div id="flash"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+{
+const WORLD=4;
+const $=s=>document.querySelector(s);
+const ar=n=>n.toLocaleString('ar');
+const D=b=>[b+'ُ',b+'َ',b+'ِ'];
+const I=b=>b.endsWith('ة')?[b+'ٌ',b+'ً',b+'ٍ']:[b+'ٌ',b+'ًا',b+'ٍ'];
+const F=t=>({o:[t],c:0,fixed:true});
+const w=(o,c)=>({o,c});
+const HALLS=[
+ {name:'القاعة الأولى',title:'إنّ وكان',hint:'«إنّ» تنصب الأول وتُبقي الثاني مرفوعًا، و«كان» تُبقي الأول مرفوعًا وتنصب الثاني.',time:16},
+ {name:'القاعة الثانية',title:'الأخوات',hint:'أصبح وليس وصار من أخوات «كان»، ولعلّ وكأنّ وليت من أخوات «إنّ».',time:14},
+ {name:'القاعة الثالثة',title:'علامات فرعية',hint:'المثنى وجمع المذكر يُنصبان بالياء، والأسماء الخمسة بالألف، وجمع المؤنث يُنصب بالكسرة.',time:15},
+ {name:'القاعة الرابعة',title:'فخ الترتيب',hint:'قد يتقدّم الخبر شبه جملة، فابحث عن الاسم المتأخر وحدّد حركته.',time:12},
+ {name:'المعركة الأخيرة',title:'حارس القلعة',hint:'ناسخان يسقطان معًا على جملتين. أصلح الجملتين قبل الارتطام.',time:18,boss:true}
+];
+const RD=[
+ {h:0,lines:[{n:'إنّ',ws:[w(D('الجوّ'),1),w(I('جميل'),0)]}],ex:'«إنّ» نصبت المبتدأ فصار اسمها «الجوَّ»، وبقي خبرها مرفوعًا.'},
+ {h:0,lines:[{n:'كان',ws:[w(D('الجوّ'),0),w(I('جميل'),1)]}],ex:'«كان» أبقت اسمها مرفوعًا، ونصبت خبرها «جميلًا».'},
+ {h:0,lines:[{n:'إنّ',ws:[w(D('العلم'),1),w(I('نور'),0)]}],ex:'اسم «إنّ» منصوب «العلمَ»، وخبرها مرفوع «نورٌ».'},
+ {h:1,lines:[{n:'أصبح',ws:[w(D('الطالب'),0),w(I('مجتهد'),1)]}],ex:'«أصبح» من أخوات كان: اسمها مرفوع وخبرها منصوب.'},
+ {h:1,lines:[{n:'لعلّ',ws:[w(D('الفرج'),1),w(I('قريب'),0)]}],ex:'«لعلّ» من أخوات إنّ: تنصب اسمها وترفع خبرها.'},
+ {h:1,lines:[{n:'ليس',ws:[w(D('الامتحان'),0),w(I('صعب'),1)]}],ex:'«ليس» من أخوات كان، فخبرها منصوب «صعبًا».'},
+ {h:1,lines:[{n:'كأنّ',ws:[w(D('القمر'),1),w(I('مصباح'),0)]}],ex:'«كأنّ» من أخوات إنّ: «القمرَ» اسمها منصوب، و«مصباحٌ» خبرها مرفوع.'},
+ {h:2,lines:[{n:'إنّ',ws:[w(['المعلمون','المعلمين'],1),w(['مخلصون','مخلصين'],0)]}],ex:'اسم إنّ جمع مذكر سالم منصوب بالياء، وخبرها مرفوع بالواو.'},
+ {h:2,lines:[{n:'كان',ws:[w(['الطالبان','الطالبَين'],0),w(['مجتهدان','مجتهدَين'],1)]}],ex:'اسم كان مثنى مرفوع بالألف، وخبرها مثنى منصوب بالياء.'},
+ {h:2,lines:[{n:'إنّ',ws:[w(['أبوك','أباك','أبيك'],1),w(I('كريم'),0)]}],ex:'«أبا» من الأسماء الخمسة، فاسم إنّ منصوب بالألف.'},
+ {h:2,lines:[{n:'ليس',ws:[w(D('المهندسات'),0),w(['متأخراتٌ','متأخراتٍ'],1)]}],ex:'خبر ليس جمع مؤنث سالم، منصوب بالكسرة نيابة عن الفتحة.'},
+ {h:3,lines:[{n:'إنّ',ws:[F('في البيتِ'),w(I('رجل'),1)]}],ex:'«في البيتِ» خبر مقدّم، و«رجلًا» اسم إنّ مؤخَّر منصوب.'},
+ {h:3,lines:[{n:'كان',ws:[F('في الفصلِ'),w(I('طالب'),0)]}],ex:'فخّ! «طالبٌ» اسم كان مؤخَّر، واسم كان يبقى مرفوعًا فلا يتغيّر.'},
+ {h:3,lines:[{n:'لعلّ',ws:[F('عندك'),w(I('خبر'),1)]}],ex:'«عندك» ظرف في موضع الخبر المقدّم، و«خبرًا» اسم لعلّ مؤخَّر منصوب.'},
+ {h:4,lines:[{n:'إنّ',ws:[w(D('الصدق'),1),w(I('منجاة'),0)]},{n:'كان',ws:[w(['المؤمنون','المؤمنين'],0),w(I('إخوة'),1)]}],ex:'«إنّ الصدقَ منجاةٌ»: اسمها منصوب وخبرها مرفوع. «كان المؤمنون إخوةً»: اسمها مرفوع بالواو وخبرها منصوب.'}
+];
+const N=RD.length;
+const st={r:0,hearts:3,score:0,streak:0,ok:0,bad:0,phase:'idle',t:0,left:0,max:1,mist:[]};
+let cur=null;
+
+/* ---------- المشهد ---------- */
+const cv=$('#c');
+const ren=new THREE.WebGLRenderer({canvas:cv,antialias:true});
+ren.setPixelRatio(Math.min(devicePixelRatio,2));
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x0c1616);
+scene.fog=new THREE.Fog(0x0c1616,16,48);
+const cam=new THREE.PerspectiveCamera(58,1,.1,200);
+scene.add(new THREE.HemisphereLight(0xd8f0e0,0x101818,.55));
+const M=(c,e=0)=>new THREE.MeshStandardMaterial({color:c,roughness:.9,emissive:e?c:0,emissiveIntensity:e});
+const hall=new THREE.Group();scene.add(hall);
+const stone=M(0x3c4d4a),stoneD=M(0x2a3836),banner=M(0x8a2338),torchM=M(0xffa040,1.6);
+{const fl=new THREE.Mesh(new THREE.PlaneGeometry(30,40),M(0x34433f));fl.rotation.x=-Math.PI/2;fl.position.z=-8;hall.add(fl);
+ for(let x=-6;x<=6;x+=2)for(let z=-26;z<=8;z+=2)if((x+z)/2%2===0){const t=new THREE.Mesh(new THREE.PlaneGeometry(1.96,1.96),M(0x2b3835));t.rotation.x=-Math.PI/2;t.position.set(x,.01,z);hall.add(t)}
+ const wall=new THREE.Mesh(new THREE.PlaneGeometry(30,24),stoneD);wall.position.set(0,12,-22);hall.add(wall);
+ const ceil=new THREE.Mesh(new THREE.PlaneGeometry(30,40),stoneD);ceil.rotation.x=Math.PI/2;ceil.position.set(0,16,-8);hall.add(ceil);
+ const win=new THREE.Mesh(new THREE.CircleGeometry(2.4,32),new THREE.MeshBasicMaterial({color:0x7fe0c0}));win.position.set(0,11,-21.9);hall.add(win);
+ for(let z=4;z>=-20;z-=6)[-1,1].forEach(s=>{const p=new THREE.Mesh(new THREE.BoxGeometry(1.4,16,1.4),stone);p.position.set(s*6.5,8,z);hall.add(p);
+  const b=new THREE.Mesh(new THREE.PlaneGeometry(1.6,4.4),banner);b.position.set(s*5.75,9.5,z+.2);b.rotation.y=-s*Math.PI/2*0;hall.add(b);
+  const tc=new THREE.Mesh(new THREE.SphereGeometry(.25,10,8),torchM);tc.position.set(s*5.6,6,z+.9);hall.add(tc)});
+ [[-5,5,-4],[5,5,-4],[0,8,-16]].forEach(([x,y,z])=>{const l=new THREE.PointLight(0xffa050,1.2,22);l.position.set(x,y,z);hall.add(l)});
+ const front=new THREE.DirectionalLight(0xe0fff0,.55);front.position.set(0,6,12);scene.add(front);}
+const motes=(()=>{const n=220,p=new Float32Array(n*3);for(let i=0;i<n;i++)p.set([(Math.random()-.5)*12,Math.random()*14,-Math.random()*20],i*3);
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(p,3));const m=new THREE.Points(g,new THREE.PointsMaterial({color:0xf0c873,size:.06}));hall.add(m);return m})();
+
+/* الكتل */
+const BW=2.2,BH=1.2,GX=.22,Y0=8.2,YF=.65;
+let rowG=null;const debris=[];
+function faceTex(){const c=document.createElement('canvas');c.width=512;c.height=280;const t=new THREE.CanvasTexture(c);t.minFilter=THREE.LinearFilter;t.generateMipmaps=false;return{c,t}}
+function paint(b,txt,s){const x=b.c.getContext('2d'),W=512,H=280;
+ const pal={idle:['#2e4a46','#f0c873','#f4fff8'],ok:['#11514b','#43d6c8','#bff7ef'],no:['#5a1a27','#ff6b6b','#ffd6d6'],nas:['#f0c873','#fff1c4','#2a1a05'],fixed:['#26302f','#7c8f8a','#c9d6d2']}[s];
+ x.fillStyle=pal[0];x.fillRect(0,0,W,H);x.strokeStyle=pal[1];x.lineWidth=14;x.strokeRect(7,7,W-14,H-14);
+ let size=150;x.font=`700 ${size}px Amiri, serif`;const tw=x.measureText(txt).width;if(tw>440){size*=440/tw;x.font=`700 ${size}px Amiri, serif`}
+ x.direction='rtl';x.textAlign='center';x.textBaseline='middle';x.fillStyle=pal[2];x.fillText(txt,W/2,H/2+8);b.t.needsUpdate=true}
+function makeBlock(txt,s){const f=faceTex(),side=s==='nas'?M(0xc9a050,.25):M(0x2e4a46);
+ const m=new THREE.Mesh(new THREE.BoxGeometry(BW,BH,.6),[side,side,side,side,new THREE.MeshStandardMaterial({map:f.t,roughness:.7,emissive:0xffffff,emissiveMap:f.t,emissiveIntensity:.35}),side]);
+ const b={m,c:f.c,t:f.t};paint(b,txt,s);return b}
+function build(){if(rowG){hall.remove(rowG);rowG=null}
+ rowG=new THREE.Group();hall.add(rowG);rowG.position.set(0,Y0+(cur.lines.length-1)*1.6,-5);
+ cur.lines.forEach((ln,li)=>{const n=ln.ws.length+1,tot=n*BW+(n-1)*GX;let x=tot/2-BW/2;const y=-li*1.6;
+  const nb=makeBlock(ln.n,'nas');nb.m.position.set(x,y+9,0);nb.y=y;rowG.add(nb.m);ln.nb=nb;x-=BW+GX;
+  ln.ws.forEach(o=>{const b=makeBlock(o.o[o.i],o.fixed?'fixed':'idle');b.m.position.set(x,y,0);rowG.add(b.m);o.b=b;x-=BW+GX})})}
+function shatter(){rowG.children.slice().forEach(m=>{const p=new THREE.Vector3();m.getWorldPosition(p);rowG.remove(m);m.position.copy(p);hall.add(m);
+ debris.push({m,v:new THREE.Vector3((Math.random()-.5)*6,3+Math.random()*4,(Math.random()-.2)*4),r:new THREE.Vector3(Math.random()*4,Math.random()*4,Math.random()*4),life:2.2})})}
+
+/* ---------- الواجهة ---------- */
+const heartSVG=c=>`<svg viewBox="0 0 24 24" class="${c}"><path fill="#ff6b6b" d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.6 4.5c2.1 0 3.7 1.2 5.4 3.2 1.7-2 3.3-3.2 5.4-3.2 3.6 0 5.7 3.9 4.2 7.3C19.5 16.4 12 21 12 21z"/></svg>`;
+const starSVG=on=>`<svg viewBox="0 0 24 24"><path fill="${on?'#f0c873':'#ffffff26'}" d="M12 2l3 6.6 7.2.8-5.4 4.9 1.5 7.1L12 17.8 5.7 21.4l1.5-7.1L1.8 9.4 9 8.6z"/></svg>`;
+function hud(){$('#hearts').innerHTML=[0,1,2].map(i=>heartSVG(i<st.hearts?'':'lost')).join('');
+ const h=HALLS[RD[Math.min(st.r,N-1)].h];$('#hlabel').textContent=h.boss?'حارس القلعة':`${h.title} · ${ar(st.r+1)} من ${ar(N)}`;
+ $('#score').textContent=ar(st.score);$('#streak').textContent=st.streak>=2?`×${ar(st.streak)}`:''}
+const sentOf=(lines,f)=>lines.map(l=>l.n+' '+l.ws.map(f).join(' ')).join(' — ');
+function renderCard(){
+ $('#lines').innerHTML=cur.lines.map((l,li)=>`<div class="line"><span class="nas">${l.n}</span>${l.ws.map((o,wi)=>`<button class="wb${o.fixed?' fixed':''}" data-l="${li}" data-w="${wi}" ${o.fixed?'tabindex="-1"':''}>${o.o[o.i]}</button>`).join('')}</div>`).join('')}
+function startRound(){
+ const R=RD[st.r];cur={lines:R.lines.map(l=>({n:l.n,ws:l.ws.map(o=>({...o,i:0}))})),ex:R.ex};
+ build();renderCard();
+ $('#ask').textContent='الجملة الأصلية: '+cur.lines.map(l=>l.ws.map(o=>o.o[0]).join(' ')).join(' — ');
+ $('#q').hidden=false;$('#res').hidden=true;$('#lock').disabled=true;$('#timer i').style.width='100%';$('#card').classList.add('on');
+ st.phase='drop';st.t=0;st.max=st.left=HALLS[R.h].time;hud()}
+$('#lines').addEventListener('click',e=>{const b=e.target.closest('.wb');if(!b||b.classList.contains('fixed')||st.phase!=='play')return;
+ const o=cur.lines[+b.dataset.l].ws[+b.dataset.w];o.i=(o.i+1)%o.o.length;b.textContent=o.o[o.i];paint(o.b,o.o[o.i],'idle')});
+$('#lock').addEventListener('click',()=>{if(st.phase==='play')resolve(cur.lines.every(l=>l.ws.every(o=>o.i===o.c)),false)});
+let shake=0;
+function resolve(ok,timeout){
+ st.phase=ok?'win':'lose';st.t=0;const right=sentOf(cur.lines,o=>o.o[o.c]);
+ cur.lines.forEach(l=>l.ws.forEach(o=>{if(o.fixed)return;const good=o.i===o.c;paint(o.b,o.o[o.c],ok||good?'ok':'no')}));
+ [...document.querySelectorAll('.wb:not(.fixed)')].forEach(b=>{const o=cur.lines[+b.dataset.l].ws[+b.dataset.w];b.classList.add(o.i===o.c?'ok':'no')});
+ if(ok){st.ok++;st.streak++;const pts=Math.round((100+Math.ceil(st.left)*8)*(1+Math.min(st.streak-1,4)*.25));st.score+=pts;
+  $('#rt').textContent=st.streak>=3?'رائع! سلسلة متصلة':'أحسنت!';$('#rt').style.color='var(--teal)';$('#rx').innerHTML=`<span class="pts">+${ar(pts)}</span> — ${cur.ex}`}
+ else{st.bad++;st.streak=0;st.hearts--;shake=.6;const f=$('#flash');f.style.transition='none';f.style.opacity=.32;requestAnimationFrame(()=>{f.style.transition='';f.style.opacity=0});
+  if(timeout)shatter();
+  const wrong=cur.lines.flatMap(l=>l.ws.filter(o=>!o.fixed&&o.i!==o.c).map(o=>`«${o.o[o.i]}» والصواب «${o.o[o.c]}»`)).join('، ');
+  st.mist.push({s:right,why:timeout?'ارتطمت الكتل قبل التثبيت':wrong});
+  $('#rt').textContent=timeout?'ارتطمت الكتل بالأرض':'الحركات غير صحيحة';$('#rt').style.color='var(--rose)';$('#rx').innerHTML=(timeout?'':wrong+'. ')+cur.ex}
+ $('#rs').textContent=right;$('#next').textContent=st.hearts>0?'تابع':'النتيجة';
+ setTimeout(()=>{$('#q').hidden=true;$('#res').hidden=false},700);hud()}
+$('#next').addEventListener('click',()=>{
+ if(st.hearts<=0)return end(false);st.r++;$('#card').classList.remove('on');
+ if(rowG){hall.remove(rowG);rowG=null}
+ if(st.r>=N)return setTimeout(()=>end(true),400);
+ setTimeout(()=>RD[st.r].h!==RD[st.r-1].h?showIntro():startRound(),450)});
+function showIntro(){const h=HALLS[RD[st.r].h];$('#in').textContent=h.name;$('#it').textContent=h.title;$('#ih').textContent=h.hint;$('#intro').hidden=false;hud()}
+$('#igo').addEventListener('click',()=>{$('#intro').hidden=true;startRound()});
+function end(win){st.phase='idle';$('#card').classList.remove('on');
+ const tot=st.ok+st.bad,acc=tot?Math.round(st.ok/tot*100):0;let best=st.score;
+ try{best=Math.max(best,+localStorage.getItem('nahw4-best')||0);localStorage.setItem('nahw4-best',best)}catch(e){}
+ const n=!win?(acc>=50?1:0):acc>=90?3:acc>=70?2:1;
+ $('#et').textContent=win?'فتحتَ القلعة!':'سقطت القلعة';
+ $('#stars').innerHTML=[0,1,2].map(i=>starSVG(i<n)).join('');
+ try{const K='mt-nahw',P=JSON.parse(localStorage.getItem(K)||'{}'),o=P[WORLD]||{s:0,b:0};P[WORLD]={s:Math.max(o.s,win?n:0),b:Math.max(o.b,st.score)};localStorage.setItem(K,JSON.stringify(P))}catch(e){}
+ $('#nextw').hidden=!(win&&WORLD<4);
+ $('#es').textContent=ar(st.score);$('#ea').textContent=ar(acc)+'٪';$('#eb').textContent=ar(best);
+ const ms=st.mist.slice(-6);$('#mist').hidden=!ms.length;
+ $('#mist').innerHTML='<h4>راجع أخطاءك</h4>'+ms.map(m=>`<p><span class="s">${m.s}</span>${m.why}</p>`).join('');
+ $('#end').hidden=false}
+function reset(){Object.assign(st,{r:0,hearts:3,score:0,streak:0,ok:0,bad:0,phase:'idle',mist:[]});if(rowG){hall.remove(rowG);rowG=null}
+ debris.splice(0).forEach(d=>hall.remove(d.m));hall.rotation.z=0;hud()}
+$('#go').addEventListener('click',()=>{$('#start').hidden=true;reset();showIntro()});
+$('#again').addEventListener('click',()=>{$('#end').hidden=true;reset();showIntro()});
+
+/* ---------- الحلقة ---------- */
+let W=0,H=0,port=false;
+function resize(){W=innerWidth;H=innerHeight;ren.setSize(W,H,false);cam.aspect=W/H;port=cam.aspect<.8;cam.fov=port?64:52;
+ cam.setViewOffset(W,H,0,H*.17,W,H);cam.updateProjectionMatrix()}
+const ro=new ResizeObserver(resize);ro.observe(document.body);resize();
+const ease=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+let last=performance.now(),T=0;
+function loop(now){
+ const dt=Math.min(.05,(now-last)/1000);last=now;T+=dt;st.t+=dt;
+ if(st.phase==='drop'&&cur){const k=Math.min(1,st.t/.8);
+  cur.lines.forEach(l=>l.nb.m.position.y=l.nb.y+9*(1-k*k));
+  if(st.t>.8&&st.t<.85)shake=.35;
+  hall.rotation.z=st.t>.8?ease(Math.min(1,(st.t-.8)/1.1))*Math.PI*2:0;
+  if(st.t>=1.9){hall.rotation.z=0;st.phase='play';$('#lock').disabled=false;$('#ask').textContent=`دخل الناسخ! المس الكلمات لتصحيح حركاتها، ثم ثبّت`}}
+ if(st.phase==='play'){st.left-=dt;const p=Math.max(0,st.left/st.max);rowG.position.y=YF+(cur.lines.length-1)*1.6+(Y0-YF)*p;
+  const bar=$('#timer i');bar.style.width=(p*100)+'%';bar.style.background=p<.3?'var(--rose)':'var(--teal)';
+  rowG.rotation.z=Math.sin(T*1.7)*.03;
+  if(st.left<=0)resolve(false,true)}
+ if(st.phase==='win'&&rowG){rowG.position.y+=dt*4;rowG.children.forEach(m=>m.rotation.y+=dt*3)}
+ for(let i=debris.length-1;i>=0;i--){const d=debris[i];d.v.y-=dt*14;d.m.position.addScaledVector(d.v,dt);if(d.m.position.y<.3){d.m.position.y=.3;d.v.y*=-.3;d.v.x*=.7;d.v.z*=.7}
+  d.m.rotation.x+=d.r.x*dt;d.m.rotation.y+=d.r.y*dt;d.life-=dt;if(d.life<=0){hall.remove(d.m);debris.splice(i,1)}}
+ motes.rotation.y+=dt*.03;
+ shake=Math.max(0,shake-dt*1.6);
+ cam.position.set((Math.random()-.5)*shake,4.6+(Math.random()-.5)*shake,port?11:8.5);
+ cam.lookAt(0,4.2,-6);
+ ren.render(scene,cam);requestAnimationFrame(loop);
+}
+hud();
+(document.fonts?document.fonts.load('700 100px Amiri'):Promise.resolve()).catch(()=>{});
+requestAnimationFrame(loop);
+}
+</script>
+<script>{const go=h=>{try{location.hash=h}catch(e){}location.reload()};
+document.querySelectorAll('.home').forEach(b=>b.addEventListener('click',()=>go('')));
+document.getElementById('nextw').addEventListener('click',()=>go('world-5'));}</script>
+</body>
+</html>
