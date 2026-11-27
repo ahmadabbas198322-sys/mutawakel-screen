@@ -76,5 +76,17 @@
   "url": "https://commons.wikimedia.org/wiki/File:Lion_raring-sound1TamilNadu178.ogg",
   "license": "Public domain",
   "artist": "த*உழவன்"
+ },
+ "cat_2.mp3": {
+  "file": "File:Meow.ogg",
+  "url": "https://commons.wikimedia.org/wiki/File:Meow.ogg",
+  "license": "CC BY-SA 3.0",
+  "artist": "The original uploader was Dcrosby at English Wikipedia."
+ },
+ "duck_1.mp3": {
+  "file": "File:Domestic duck sound 01.wav",
+  "url": "https://commons.wikimedia.org/wiki/File:Domestic_duck_sound_01.wav",
+  "license": "CC BY-SA 4.0",
+  "artist": "Ganesh Mohan T"
  }
 }
