@@ -24,7 +24,7 @@ body{background:#ffb703;transition:background .5s}
 .hidden{display:none!important}
 /* home */
 #home h1{font-size:clamp(34px,7vw,72px);color:#fff;text-shadow:0 4px 0 rgba(0,0,0,.15);margin-bottom:3vh}
-.tiles{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:1.6vw;width:min(96vw,1500px)}
+.tiles{display:grid;grid-template-columns:repeat(9,minmax(0,1fr));gap:1.3vw;width:min(97vw,1600px)}
 .tile{border:none;border-radius:26px;padding:2.2vh .5vw;background:#fff;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1vh;font:inherit;font-size:clamp(18px,3vw,34px);color:#333;box-shadow:0 10px 0 rgba(0,0,0,.15);transition:transform .15s}
 .tile .ic{font-size:min(9vh,6vw);line-height:1;height:1.2em;display:flex;align-items:center}
 .tile{font-size:min(3.2vh,2.2vw)!important}
@@ -145,6 +145,7 @@ body{background:#ffb703;transition:background .5s}
 <div id="home" class="view">
   <h1>مرح الصغار</h1>
   <div class="tiles">
+    <button class="tile" data-mode="monkey"><span class="ic emo">🐵</span>مغامرة القرد</button>
     <button class="tile" data-mode="animals"><span class="ic emo">🐮</span>الحيوانات</button>
     <button class="tile" data-mode="letters"><span class="ic big">أ ب</span>الحروف</button>
     <button class="tile" data-mode="numbers"><span class="ic big">١٢٣</span>الأرقام</button>
@@ -227,6 +228,9 @@ const SND={
  rain(){N({dur:2.2,filt:{type:'highpass',f:[[0,2500]]},vol:.15,att:.3});[0,.3,.5,.9,1.2,1.5,1.8].forEach(t0=>V({type:'sine',f:[[0,1800+Math.random()*900],[.05,900]],dur:.07,vol:.2,t0}))},
  chime(){[1047,1319,1568,2093].forEach((f,i)=>V({type:'sine',f:[[0,f]],dur:.5,vol:.2,t0:i*.12}))},
  note(f){V({type:'triangle',f:[[0,f]],dur:.6,vol:.35});V({type:'sine',f:[[0,f*2]],dur:.35,vol:.12})},
+ yip(){[0,.22].forEach(t0=>V({f:[[0,900],[.08,1500],[.16,800]],dur:.18,filt:{f:[[0,1600]],q:2},vol:.3,t0}))},
+ munch(){[0,.25,.5,.75].forEach(t0=>N({dur:.09,filt:{f:[[0,900]],q:2},vol:.35,t0}))},
+ hum(){V({type:'sine',f:[[0,95],[1.4,90]],dur:1.5,vol:.45,vib:3,vibRate:5,att:.2})},
  whoosh(){N({dur:.35,filt:{f:[[0,400],[.35,2500]],q:1.5},vol:.25})}
 };
 /* optional spoken names where the device has an Arabic voice (phones, iPad) */
@@ -329,5 +333,7 @@ goHome();
 }
 </script>
 <script src="games.js"></script>
+<script src="monkey_art.js"></script>
+<script src="monkey.js"></script>
 </body>
 </html>
