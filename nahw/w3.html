@@ -126,6 +126,27 @@ h2{font-size:18px;font-weight:600;color:var(--teal);margin:6px 0 16px}
 </div>
 <div id="flash"></div>
 
+<script>{let ctx=null,out=null;
+const on=()=>{try{return localStorage.getItem('mt-sound')!=='0'}catch(e){return true}};
+function init(){if(ctx)return;try{const A=window.AudioContext||window.webkitAudioContext;ctx=new A();out=ctx.createGain();out.gain.value=.9;
+ const d=ctx.createDelay();d.delayTime.value=.18;const fb=ctx.createGain();fb.gain.value=.22;const wet=ctx.createGain();wet.gain.value=.25;
+ out.connect(ctx.destination);out.connect(d);d.connect(fb);fb.connect(d);d.connect(wet);wet.connect(ctx.destination)}catch(e){ctx=null}}
+const unlock=()=>{init();if(ctx&&ctx.state==='suspended')ctx.resume()};
+addEventListener('pointerdown',unlock,true);addEventListener('keydown',unlock,true);
+function tone(f,t0,dur,type,g,f2){const t=ctx.currentTime+t0,o=ctx.createOscillator(),a=ctx.createGain();o.type=type||'sine';o.frequency.setValueAtTime(f,t);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+dur);
+ a.gain.setValueAtTime(0,t);a.gain.linearRampToValueAtTime(g||.1,t+.015);a.gain.exponentialRampToValueAtTime(.0001,t+dur);o.connect(a);a.connect(out);o.start(t);o.stop(t+dur+.05)}
+function noise(t0,dur,g,f1,f2){const t=ctx.currentTime+t0,n=Math.floor(ctx.sampleRate*dur),b=ctx.createBuffer(1,n,ctx.sampleRate),d=b.getChannelData(0);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*(1-i/n);
+ const s=ctx.createBufferSource();s.buffer=b;const fl=ctx.createBiquadFilter();fl.type='lowpass';fl.frequency.setValueAtTime(f1,t);fl.frequency.exponentialRampToValueAtTime(f2,t+dur);const a=ctx.createGain();a.gain.value=g;s.connect(fl);fl.connect(a);a.connect(out);s.start(t)}
+const P=fn=>()=>{if(!on())return;try{unlock();if(ctx)fn()}catch(e){}};
+window.SFX={
+ tap:P(()=>tone(880,0,.08,'sine',.035)),
+ ok:P(()=>{tone(659,0,.45,'sine',.09);tone(988,.11,.6,'sine',.08);tone(1319,.11,.6,'sine',.02)}),
+ place:P(()=>{tone(392,0,.25,'triangle',.07);tone(587,.06,.35,'sine',.06)}),
+ bad:P(()=>{tone(311,0,.35,'triangle',.07);tone(233,.14,.5,'triangle',.07)}),
+ thud:P(()=>{tone(110,0,.35,'sine',.18,45);noise(0,.25,.08,600,120)}),
+ fall:P(()=>{noise(0,2.2,.16,900,80);tone(70,0,2,'sine',.14,35);tone(196,.2,.9,'triangle',.05,98)}),
+ win:P(()=>{[523,659,784,1047].forEach((f,i)=>tone(f,i*.14,.7,'sine',.08));tone(1568,.56,1.2,'sine',.03)})
+};}</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 {
@@ -257,7 +278,7 @@ function hud(){$('#stones').innerHTML=Array.from({length:MAXS},(_,i)=>stoneSVG(i
 let toastT=0;
 function toast(msg,ok){const t=$('#toast');t.textContent=msg;t.classList.toggle('no',!ok);t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),2600)}
 let shake=0;
-function hurt(){st.stones--;st.bad++;st.perfect=false;shake=.5;const f=$('#flash');f.style.transition='none';f.style.opacity=.3;
+function hurt(){SFX.bad();st.stones--;st.bad++;st.perfect=false;shake=.5;const f=$('#flash');f.style.transition='none';f.style.opacity=.3;
  requestAnimationFrame(()=>{f.style.transition='';f.style.opacity=0});hud();if(st.stones<=0)setTimeout(collapse,500)}
 function renderSent(){const q=PZ[st.p],bl=blanks(st.p);let j=0;
  $('#sent').innerHTML=q.parts.map(x=>{if(x[0]!=='#')return`<span>${x}</span>`;const k=j++;
@@ -270,7 +291,7 @@ function startPuzzle(){
 $('#tray').addEventListener('click',e=>{
  const b=e.target.closest('button');if(!b||!st.run||b.classList.contains('used'))return;
  const w=b.dataset.w,bl=blanks(st.p),need=bl[st.b];
- if(w===need){placeBlock(st.p,st.b,w);b.classList.add('used');st.b++;st.ok++;st.score+=50;renderSent();hud();
+ if(w===need){SFX.place();placeBlock(st.p,st.b,w);b.classList.add('used');st.b++;st.ok++;st.score+=50;renderSent();hud();
   if(st.b>=bl.length)finishPuzzle();return}
  b.classList.remove('wrong');void b.offsetWidth;b.classList.add('wrong');
  if(bl.slice(st.b+1).includes(w)){toast(`«${w}» صحيحة، لكن مكانها لاحقًا في الجملة`,false);
@@ -279,7 +300,7 @@ $('#tray').addEventListener('click',e=>{
  st.mist.push({s:PZ[st.p].parts.map(x=>x.replace('#','')).join(' '),w,why});
  dropBlock(st.p,st.b,w);b.classList.add('used');hurt();
 });
-function finishPuzzle(){st.run=false;$('#timer').hidden=true;
+function finishPuzzle(){SFX.ok();st.run=false;$('#timer').hidden=true;
  const bonus=st.perfect?100+(st.timed?Math.ceil(st.left)*5:0):0;st.score+=bonus;if(st.perfect)st.full++;hud();
  $('#rt').textContent=st.perfect?'جسر كامل بلا سقوط!':'اكتمل الجسر';
  $('#rx').innerHTML=(bonus?`<span class="pts">+${ar(bonus)}</span> — `:'')+PZ[st.p].ex;
@@ -291,7 +312,7 @@ $('#cross').addEventListener('click',()=>{
  const ng=PZ[st.p].g;setTimeout(()=>ng!==PZ[st.p-1].g?showIntro():startPuzzle(),1900)});
 function showIntro(){const g=GROUPS[PZ[st.p].g];$('#in').textContent=g.name;$('#it').textContent=g.title;$('#ih').textContent=g.hint;$('#intro').hidden=false;hud()}
 $('#igo').addEventListener('click',()=>{$('#intro').hidden=true;startPuzzle()});
-function end(win){
+function end(win){if(win)SFX.win();
  if($('#end').hidden===false)return;st.run=false;$('#card').classList.remove('on');
  const tot=st.ok+st.bad,acc=tot?Math.round(st.ok/tot*100):0;let best=st.score;
  try{best=Math.max(best,+localStorage.getItem('nahw3-best')||0);localStorage.setItem('nahw3-best',best)}catch(e){}
@@ -305,7 +326,7 @@ function end(win){
  $('#mist').innerHTML='<h4>راجع أخطاءك</h4>'+ms.map(m=>`<p><span class="s">${m.s}</span>«${m.w}»: ${m.why}</p>`).join('');
  $('#end').hidden=false}
 let fall=null;
-function collapse(){if(fall)return;st.run=false;$('#card').classList.remove('on');shake=1;const f=$('#flash');f.style.transition='none';f.style.opacity=.45;requestAnimationFrame(()=>{f.style.transition='opacity 1.6s';f.style.opacity=0});
+function collapse(){if(fall)return;SFX.fall();st.run=false;$('#card').classList.remove('on');shake=1;const f=$('#flash');f.style.transition='none';f.style.opacity=.45;requestAnimationFrame(()=>{f.style.transition='opacity 1.6s';f.style.opacity=0});
  ghosts.forEach(g=>g.visible=false);
  fall={t:0,vy:0,isl:islands[Math.min(st.p,N)],ps:placed.map(m=>({m,vy:0,d:Math.random()*.6,r:(Math.random()-.5)*4}))};
  setTimeout(()=>end(false),3000)}

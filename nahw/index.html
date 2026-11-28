@@ -79,6 +79,7 @@ h1{font:700 clamp(52px,15vw,84px)/1.05 Amiri,serif;margin:12px 0 6px;color:var(-
 
   <div class="tools">
     <button id="teacher" aria-pressed="false">وضع المعلم: فتح جميع العوالم</button>
+    <button id="sound" aria-pressed="true">الأصوات: مفعّلة</button>
     <button id="reset">إعادة التقدم من البداية</button>
   </div>
   <p class="foot">يُحفظ تقدّمك على هذا الجهاز · منصة المتوكل التعليمية</p>
@@ -127,6 +128,9 @@ $('#teacher').addEventListener('click',()=>{try{localStorage.setItem(KT,teacher(
 const rs=$('#reset');let armed=false;
 rs.addEventListener('click',()=>{if(!armed){armed=true;rs.textContent='اضغط مرة أخرى للتأكيد';setTimeout(()=>{armed=false;rs.textContent='إعادة التقدم من البداية'},3000);return}
  try{localStorage.removeItem(K)}catch(e){}armed=false;rs.textContent='إعادة التقدم من البداية';render()});
+const snd=$('#sound');const sOn=()=>{try{return localStorage.getItem('mt-sound')!=='0'}catch(e){return true}};
+const sRen=()=>{snd.textContent='الأصوات: '+(sOn()?'مفعّلة':'متوقفة');snd.setAttribute('aria-pressed',sOn())};
+snd.addEventListener('click',()=>{try{localStorage.setItem('mt-sound',sOn()?'0':'1')}catch(e){}sRen()});sRen();
 render();
 const m=location.hash.match(/^#world-([1-4])$/);
 if(m&&open(load(),+m[1]))launch(+m[1]);

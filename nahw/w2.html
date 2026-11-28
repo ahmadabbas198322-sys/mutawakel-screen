@@ -113,6 +113,27 @@ h2{font-size:18px;font-weight:600;color:var(--teal);margin:6px 0 16px}
 </div>
 <div id="flash"></div>
 
+<script>{let ctx=null,out=null;
+const on=()=>{try{return localStorage.getItem('mt-sound')!=='0'}catch(e){return true}};
+function init(){if(ctx)return;try{const A=window.AudioContext||window.webkitAudioContext;ctx=new A();out=ctx.createGain();out.gain.value=.9;
+ const d=ctx.createDelay();d.delayTime.value=.18;const fb=ctx.createGain();fb.gain.value=.22;const wet=ctx.createGain();wet.gain.value=.25;
+ out.connect(ctx.destination);out.connect(d);d.connect(fb);fb.connect(d);d.connect(wet);wet.connect(ctx.destination)}catch(e){ctx=null}}
+const unlock=()=>{init();if(ctx&&ctx.state==='suspended')ctx.resume()};
+addEventListener('pointerdown',unlock,true);addEventListener('keydown',unlock,true);
+function tone(f,t0,dur,type,g,f2){const t=ctx.currentTime+t0,o=ctx.createOscillator(),a=ctx.createGain();o.type=type||'sine';o.frequency.setValueAtTime(f,t);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+dur);
+ a.gain.setValueAtTime(0,t);a.gain.linearRampToValueAtTime(g||.1,t+.015);a.gain.exponentialRampToValueAtTime(.0001,t+dur);o.connect(a);a.connect(out);o.start(t);o.stop(t+dur+.05)}
+function noise(t0,dur,g,f1,f2){const t=ctx.currentTime+t0,n=Math.floor(ctx.sampleRate*dur),b=ctx.createBuffer(1,n,ctx.sampleRate),d=b.getChannelData(0);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*(1-i/n);
+ const s=ctx.createBufferSource();s.buffer=b;const fl=ctx.createBiquadFilter();fl.type='lowpass';fl.frequency.setValueAtTime(f1,t);fl.frequency.exponentialRampToValueAtTime(f2,t+dur);const a=ctx.createGain();a.gain.value=g;s.connect(fl);fl.connect(a);a.connect(out);s.start(t)}
+const P=fn=>()=>{if(!on())return;try{unlock();if(ctx)fn()}catch(e){}};
+window.SFX={
+ tap:P(()=>tone(880,0,.08,'sine',.035)),
+ ok:P(()=>{tone(659,0,.45,'sine',.09);tone(988,.11,.6,'sine',.08);tone(1319,.11,.6,'sine',.02)}),
+ place:P(()=>{tone(392,0,.25,'triangle',.07);tone(587,.06,.35,'sine',.06)}),
+ bad:P(()=>{tone(311,0,.35,'triangle',.07);tone(233,.14,.5,'triangle',.07)}),
+ thud:P(()=>{tone(110,0,.35,'sine',.18,45);noise(0,.25,.08,600,120)}),
+ fall:P(()=>{noise(0,2.2,.16,900,80);tone(70,0,2,'sine',.14,35);tone(196,.2,.9,'triangle',.05,98)}),
+ win:P(()=>{[523,659,784,1047].forEach((f,i)=>tone(f,i*.14,.7,'sine',.08));tone(1568,.56,1.2,'sine',.03)})
+};}</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 {
@@ -275,11 +296,11 @@ function arrowFly(to,col){const m=new THREE.Mesh(new THREE.BoxGeometry(.08,.08,1
 function fire(o,row,si){
  o.alive=false;const sel=TYPES[si];
  let ok=false,msg;
- if(o.t===sel.k){ok=true;st.streak++;st.hits++;
+ if(o.t===sel.k){ok=true;SFX.ok();st.streak++;st.hits++;
   const pts=Math.round((100+Math.max(0,-row.g.position.z)*3)*(1+Math.min(st.streak-1,4)*.25));st.score+=pts;
   msg=`+${ar(pts)}  «${o.w}» ${sel.n}${o.n?' — '+o.n:''}`;
   if(row.boss){bossHP--;birdFlash=1;if(bossHP<=0)birdFall=true}
- }else{st.wrong++;
+ }else{st.wrong++;SFX.bad();
   msg=o.t?`«${o.w}» ${TN[o.t].n} وليس ${sel.n}`:`«${o.w}» ${o.n}، ليس منصوبًا`;
   st.mist.push({s:row.text,w:o.w,why:o.t?`${TN[o.t].n}${o.n?' — '+o.n:''}، واخترتَ ${sel.n}`:`${o.n}، وليس منصوبًا`});
  }
@@ -287,7 +308,7 @@ function fire(o,row,si){
  paint(o,o.state);o.dying=.001;
  toast(msg,ok);renderStrip();hud();if(!ok)damage();
 }
-function towerHit(o,r){o.alive=false;st.missed++;
+function towerHit(o,r){SFX.bad();o.alive=false;st.missed++;
  st.mist.push({s:r.text,w:o.w,why:`فاتك: ${TN[o.t].n}${o.n?' — '+o.n:''}`});
  toast(`فاتك «${o.w}» — ${TN[o.t].n}`,false);damage()}
 /* التصويب بالسحب */
@@ -317,7 +338,7 @@ function predict(){
  const dir=arcPt(ORIG,c,to,.05).sub(ORIG).normalize();nock.visible=true;nock.position.copy(ORIG).addScaledVector(dir,-.4);nock.lookAt(nock.position.clone().add(dir));
 }
 function hideAim(){dots.forEach(d=>d.visible=false);mark.visible=false;nock.visible=false}
-function launch(tg){const m=new THREE.Mesh(new THREE.BoxGeometry(.09,.09,1.5),new THREE.MeshBasicMaterial({color:TYPES[st.sel].c,fog:false}));
+function launch(tg){SFX.tap();const m=new THREE.Mesh(new THREE.BoxGeometry(.09,.09,1.5),new THREE.MeshBasicMaterial({color:TYPES[st.sel].c,fog:false}));
  m.position.copy(ORIG);scene.add(m);tg.o.alive=false;flying.push({m,o:tg.o,r:tg.r,sel:st.sel,t:0,prev:ORIG.clone()});bow.userData.kick=1}
 cv.addEventListener('pointerdown',e=>{if(!st.run)return;drag={x:e.clientX,y:e.clientY,id:e.pointerId,tg:null};try{cv.setPointerCapture(e.pointerId)}catch(_){}});
 cv.addEventListener('pointermove',e=>{if(drag&&e.pointerId===drag.id){drag.x=e.clientX;drag.y=e.clientY}});
@@ -335,7 +356,7 @@ function updateArrows(dt){
 function showWave(){const w=WAVES[st.wave];$('#wn').textContent=w.name;$('#wt').textContent=w.title;$('#wh').textContent=w.hint;$('#wave').hidden=false;hud()}
 $('#wgo').addEventListener('click',()=>{$('#wave').hidden=true;st.si=0;st.timer=99;st.run=true});
 function clearRows(){rows.splice(0).forEach(r=>scene.remove(r.g));arrows.splice(0).forEach(a=>scene.remove(a.m));flying.splice(0).forEach(a=>scene.remove(a.m));drag=null;hideAim();renderStrip()}
-function end(win){
+function end(win){if(win)SFX.win();
  if(!st.run&&!win&&!st.dead)return;st.dead=false;st.run=false;clearRows();bird.visible=false;$('#boss').hidden=true;
  const tot=st.hits+st.wrong+st.missed,acc=tot?Math.round(st.hits/tot*100):0;let best=st.score;
  try{best=Math.max(best,+localStorage.getItem('nahw2-best')||0);localStorage.setItem('nahw2-best',best)}catch(e){}
@@ -350,7 +371,7 @@ function end(win){
  $('#end').hidden=false;
 }
 let fall=null;
-function collapse(){if(st.dead)return;st.dead=true;st.run=false;shake=1.2;toast('انهار البرج!',false);const f=$('#flash');f.style.transition='none';f.style.opacity=.45;requestAnimationFrame(()=>{f.style.transition='opacity 1.6s';f.style.opacity=0});
+function collapse(){if(st.dead)return;SFX.fall();st.dead=true;st.run=false;shake=1.2;toast('انهار البرج!',false);const f=$('#flash');f.style.transition='none';f.style.opacity=.45;requestAnimationFrame(()=>{f.style.transition='opacity 1.6s';f.style.opacity=0});
  fall={t:0,vy:0,cs:crs.map(b=>({b,v:new THREE.Vector3(b.position.x*1.6,4+Math.random()*5,b.position.z*1.6+2),r:Math.random()*6}))};
  setTimeout(()=>end(false),3300)}
 function reset(){fall=null;st.dead=false;tower.rotation.set(0,0,0);tower.position.set(0,6,0);crs.forEach(b=>{b.position.copy(b.userData.o);b.rotation.set(0,b.userData.ry,0)});pl.position.set(0,12,.6);pl.rotation.set(0,0,0);resize();clearRows();drawWaves();Object.assign(st,{wave:0,si:0,timer:0,shields:MAXS,score:0,streak:0,hits:0,wrong:0,missed:0,run:false,mist:[]});

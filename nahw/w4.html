@@ -124,6 +124,27 @@ h2{font-size:18px;font-weight:600;color:var(--teal);margin:6px 0 16px}
 </div>
 <div id="flash"></div>
 
+<script>{let ctx=null,out=null;
+const on=()=>{try{return localStorage.getItem('mt-sound')!=='0'}catch(e){return true}};
+function init(){if(ctx)return;try{const A=window.AudioContext||window.webkitAudioContext;ctx=new A();out=ctx.createGain();out.gain.value=.9;
+ const d=ctx.createDelay();d.delayTime.value=.18;const fb=ctx.createGain();fb.gain.value=.22;const wet=ctx.createGain();wet.gain.value=.25;
+ out.connect(ctx.destination);out.connect(d);d.connect(fb);fb.connect(d);d.connect(wet);wet.connect(ctx.destination)}catch(e){ctx=null}}
+const unlock=()=>{init();if(ctx&&ctx.state==='suspended')ctx.resume()};
+addEventListener('pointerdown',unlock,true);addEventListener('keydown',unlock,true);
+function tone(f,t0,dur,type,g,f2){const t=ctx.currentTime+t0,o=ctx.createOscillator(),a=ctx.createGain();o.type=type||'sine';o.frequency.setValueAtTime(f,t);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+dur);
+ a.gain.setValueAtTime(0,t);a.gain.linearRampToValueAtTime(g||.1,t+.015);a.gain.exponentialRampToValueAtTime(.0001,t+dur);o.connect(a);a.connect(out);o.start(t);o.stop(t+dur+.05)}
+function noise(t0,dur,g,f1,f2){const t=ctx.currentTime+t0,n=Math.floor(ctx.sampleRate*dur),b=ctx.createBuffer(1,n,ctx.sampleRate),d=b.getChannelData(0);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*(1-i/n);
+ const s=ctx.createBufferSource();s.buffer=b;const fl=ctx.createBiquadFilter();fl.type='lowpass';fl.frequency.setValueAtTime(f1,t);fl.frequency.exponentialRampToValueAtTime(f2,t+dur);const a=ctx.createGain();a.gain.value=g;s.connect(fl);fl.connect(a);a.connect(out);s.start(t)}
+const P=fn=>()=>{if(!on())return;try{unlock();if(ctx)fn()}catch(e){}};
+window.SFX={
+ tap:P(()=>tone(880,0,.08,'sine',.035)),
+ ok:P(()=>{tone(659,0,.45,'sine',.09);tone(988,.11,.6,'sine',.08);tone(1319,.11,.6,'sine',.02)}),
+ place:P(()=>{tone(392,0,.25,'triangle',.07);tone(587,.06,.35,'sine',.06)}),
+ bad:P(()=>{tone(311,0,.35,'triangle',.07);tone(233,.14,.5,'triangle',.07)}),
+ thud:P(()=>{tone(110,0,.35,'sine',.18,45);noise(0,.25,.08,600,120)}),
+ fall:P(()=>{noise(0,2.2,.16,900,80);tone(70,0,2,'sine',.14,35);tone(196,.2,.9,'triangle',.05,98)}),
+ win:P(()=>{[523,659,784,1047].forEach((f,i)=>tone(f,i*.14,.7,'sine',.08));tone(1568,.56,1.2,'sine',.03)})
+};}</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 {
@@ -257,16 +278,16 @@ function startRound(){
  $('#q').hidden=false;$('#res').hidden=true;$('#lock').disabled=true;$('#timer i').style.width='100%';$('#card').classList.add('on');
  st.phase='drop';st.t=0;st.max=st.left=HALLS[R.h].time;hud()}
 $('#lines').addEventListener('click',e=>{const b=e.target.closest('.wb');if(!b||b.classList.contains('fixed')||st.phase!=='play')return;
- const o=cur.lines[+b.dataset.l].ws[+b.dataset.w];o.i=(o.i+1)%o.o.length;b.textContent=o.o[o.i];paint(o.b,o.o[o.i],'idle')});
+ const o=cur.lines[+b.dataset.l].ws[+b.dataset.w];o.i=(o.i+1)%o.o.length;SFX.tap();b.textContent=o.o[o.i];paint(o.b,o.o[o.i],'idle')});
 $('#lock').addEventListener('click',()=>{if(st.phase==='play')resolve(cur.lines.every(l=>l.ws.every(o=>o.i===o.c)),false)});
 let shake=0;
 function resolve(ok,timeout){
  st.phase=ok?'win':'lose';st.t=0;const right=sentOf(cur.lines,o=>o.o[o.c]);
  cur.lines.forEach(l=>l.ws.forEach(o=>{if(o.fixed)return;const good=o.i===o.c;paint(o.b,o.o[o.c],ok||good?'ok':'no')}));
  [...document.querySelectorAll('.wb:not(.fixed)')].forEach(b=>{const o=cur.lines[+b.dataset.l].ws[+b.dataset.w];b.classList.add(o.i===o.c?'ok':'no')});
- if(ok){st.ok++;st.streak++;const pts=Math.round((100+Math.ceil(st.left)*8)*(1+Math.min(st.streak-1,4)*.25));st.score+=pts;
+ if(ok){SFX.ok();st.ok++;st.streak++;const pts=Math.round((100+Math.ceil(st.left)*8)*(1+Math.min(st.streak-1,4)*.25));st.score+=pts;
   $('#rt').textContent=st.streak>=3?'رائع! سلسلة متصلة':'أحسنت!';$('#rt').style.color='var(--teal)';$('#rx').innerHTML=`<span class="pts">+${ar(pts)}</span> — ${cur.ex}`}
- else{st.bad++;st.streak=0;st.hearts--;shake=.6;const f=$('#flash');f.style.transition='none';f.style.opacity=.32;requestAnimationFrame(()=>{f.style.transition='';f.style.opacity=0});
+ else{SFX.bad();st.bad++;st.streak=0;st.hearts--;shake=.6;const f=$('#flash');f.style.transition='none';f.style.opacity=.32;requestAnimationFrame(()=>{f.style.transition='';f.style.opacity=0});
   if(timeout)shatter();
   const wrong=cur.lines.flatMap(l=>l.ws.filter(o=>!o.fixed&&o.i!==o.c).map(o=>`«${o.o[o.i]}» والصواب «${o.o[o.c]}»`)).join('، ');
   st.mist.push({s:right,why:timeout?'ارتطمت الكتل قبل التثبيت':wrong});
@@ -280,7 +301,7 @@ $('#next').addEventListener('click',()=>{
  setTimeout(()=>RD[st.r].h!==RD[st.r-1].h?showIntro():startRound(),450)});
 function showIntro(){const h=HALLS[RD[st.r].h];$('#in').textContent=h.name;$('#it').textContent=h.title;$('#ih').textContent=h.hint;$('#intro').hidden=false;hud()}
 $('#igo').addEventListener('click',()=>{$('#intro').hidden=true;startRound()});
-function end(win){st.phase='idle';$('#card').classList.remove('on');
+function end(win){if(win)SFX.win();st.phase='idle';$('#card').classList.remove('on');
  const tot=st.ok+st.bad,acc=tot?Math.round(st.ok/tot*100):0;let best=st.score;
  try{best=Math.max(best,+localStorage.getItem('nahw4-best')||0);localStorage.setItem('nahw4-best',best)}catch(e){}
  const n=!win?(acc>=50?1:0):acc>=90?3:acc>=70?2:1;
@@ -293,7 +314,7 @@ function end(win){st.phase='idle';$('#card').classList.remove('on');
  $('#mist').innerHTML='<h4>راجع أخطاءك</h4>'+ms.map(m=>`<p><span class="s">${m.s}</span>${m.why}</p>`).join('');
  $('#end').hidden=false}
 let fall=null;const rocks=[];
-function collapse(){if(fall)return;$('#card').classList.remove('on');shake=1.2;st.phase='dead';const f=$('#flash');f.style.transition='none';f.style.opacity=.45;requestAnimationFrame(()=>{f.style.transition='opacity 1.6s';f.style.opacity=0});
+function collapse(){if(fall)return;SFX.fall();$('#card').classList.remove('on');shake=1.2;st.phase='dead';const f=$('#flash');f.style.transition='none';f.style.opacity=.45;requestAnimationFrame(()=>{f.style.transition='opacity 1.6s';f.style.opacity=0});
  fall={t:0,ps:pillars.map((p,i)=>({p,d:.15+i*.1,dir:p.position.x>0?1:-1}))};
  for(let i=0;i<26;i++){const r=new THREE.Mesh(new THREE.DodecahedronGeometry(.3+Math.random()*.6,0),stone);r.position.set((Math.random()-.5)*10,16+Math.random()*8,-Math.random()*14);r.userData={vy:0,d:Math.random()*1.6};hall.add(r);rocks.push(r)}
  setTimeout(()=>end(false),3400)}
@@ -313,7 +334,7 @@ function loop(now){
  const dt=Math.min(.05,(now-last)/1000);last=now;T+=dt;st.t+=dt;
  if(st.phase==='drop'&&cur){const k=Math.min(1,st.t/.8);
   cur.lines.forEach(l=>l.nb.m.position.y=l.nb.y+9*(1-k*k));
-  if(st.t>.8&&st.t<.85)shake=.35;
+  if(st.t>.8&&!cur.thud){cur.thud=1;shake=.35;SFX.thud()}
   hall.rotation.z=st.t>.8?ease(Math.min(1,(st.t-.8)/1.1))*Math.PI*2:0;
   if(st.t>=1.9){hall.rotation.z=0;st.phase='play';$('#lock').disabled=false;$('#ask').textContent=`دخل الناسخ! المس الكلمات لتصحيح حركاتها، ثم ثبّت`}}
  if(st.phase==='play'){st.left-=dt;const p=Math.max(0,st.left/st.max);rowG.position.y=YF+(cur.lines.length-1)*1.6+(Y0-YF)*p;
