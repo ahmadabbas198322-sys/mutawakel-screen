@@ -206,13 +206,14 @@ const cam=new THREE.PerspectiveCamera(58,1,.1,200);
 scene.add(new THREE.HemisphereLight(0xd8f0e0,0x101818,.55));
 const M=(c,e=0)=>new THREE.MeshStandardMaterial({color:c,roughness:.9,emissive:e?c:0,emissiveIntensity:e});
 const hall=new THREE.Group();scene.add(hall);
+const pillars=[];let ceilRef=null;
 const stone=M(0x3c4d4a),stoneD=M(0x2a3836),banner=M(0x8a2338),torchM=M(0xffa040,1.6);
 {const fl=new THREE.Mesh(new THREE.PlaneGeometry(30,40),M(0x34433f));fl.rotation.x=-Math.PI/2;fl.position.z=-8;hall.add(fl);
  for(let x=-6;x<=6;x+=2)for(let z=-26;z<=8;z+=2)if((x+z)/2%2===0){const t=new THREE.Mesh(new THREE.PlaneGeometry(1.96,1.96),M(0x2b3835));t.rotation.x=-Math.PI/2;t.position.set(x,.01,z);hall.add(t)}
  const wall=new THREE.Mesh(new THREE.PlaneGeometry(30,24),stoneD);wall.position.set(0,12,-22);hall.add(wall);
- const ceil=new THREE.Mesh(new THREE.PlaneGeometry(30,40),stoneD);ceil.rotation.x=Math.PI/2;ceil.position.set(0,16,-8);hall.add(ceil);
+ const ceil=new THREE.Mesh(new THREE.PlaneGeometry(30,40),stoneD);ceil.rotation.x=Math.PI/2;ceil.position.set(0,16,-8);hall.add(ceil);ceilRef=ceil;
  const win=new THREE.Mesh(new THREE.CircleGeometry(2.4,32),new THREE.MeshBasicMaterial({color:0x7fe0c0}));win.position.set(0,11,-21.9);hall.add(win);
- for(let z=4;z>=-20;z-=6)[-1,1].forEach(s=>{const p=new THREE.Mesh(new THREE.BoxGeometry(1.4,16,1.4),stone);p.position.set(s*6.5,8,z);hall.add(p);
+ for(let z=4;z>=-20;z-=6)[-1,1].forEach(s=>{const p=new THREE.Mesh(new THREE.BoxGeometry(1.4,16,1.4),stone);p.position.set(s*6.5,8,z);p.userData.x=s*6.5;hall.add(p);pillars.push(p);
   const b=new THREE.Mesh(new THREE.PlaneGeometry(1.6,4.4),banner);b.position.set(s*5.75,9.5,z+.2);b.rotation.y=-s*Math.PI/2*0;hall.add(b);
   const tc=new THREE.Mesh(new THREE.SphereGeometry(.25,10,8),torchM);tc.position.set(s*5.6,6,z+.9);hall.add(tc)});
  [[-5,5,-4],[5,5,-4],[0,8,-16]].forEach(([x,y,z])=>{const l=new THREE.PointLight(0xffa050,1.2,22);l.position.set(x,y,z);hall.add(l)});
@@ -273,7 +274,7 @@ function resolve(ok,timeout){
  $('#rs').textContent=right;$('#next').textContent=st.hearts>0?'تابع':'النتيجة';
  setTimeout(()=>{$('#q').hidden=true;$('#res').hidden=false},700);hud()}
 $('#next').addEventListener('click',()=>{
- if(st.hearts<=0)return end(false);st.r++;$('#card').classList.remove('on');
+ if(st.hearts<=0)return collapse();st.r++;$('#card').classList.remove('on');
  if(rowG){hall.remove(rowG);rowG=null}
  if(st.r>=N)return setTimeout(()=>end(true),400);
  setTimeout(()=>RD[st.r].h!==RD[st.r-1].h?showIntro():startRound(),450)});
@@ -291,7 +292,12 @@ function end(win){st.phase='idle';$('#card').classList.remove('on');
  const ms=st.mist.slice(-6);$('#mist').hidden=!ms.length;
  $('#mist').innerHTML='<h4>راجع أخطاءك</h4>'+ms.map(m=>`<p><span class="s">${m.s}</span>${m.why}</p>`).join('');
  $('#end').hidden=false}
-function reset(){RD=drawRD();Object.assign(st,{r:0,hearts:3,score:0,streak:0,ok:0,bad:0,phase:'idle',mist:[]});if(rowG){hall.remove(rowG);rowG=null}
+let fall=null;const rocks=[];
+function collapse(){if(fall)return;$('#card').classList.remove('on');shake=1.2;st.phase='dead';const f=$('#flash');f.style.transition='none';f.style.opacity=.45;requestAnimationFrame(()=>{f.style.transition='opacity 1.6s';f.style.opacity=0});
+ fall={t:0,ps:pillars.map((p,i)=>({p,d:.15+i*.1,dir:p.position.x>0?1:-1}))};
+ for(let i=0;i<26;i++){const r=new THREE.Mesh(new THREE.DodecahedronGeometry(.3+Math.random()*.6,0),stone);r.position.set((Math.random()-.5)*10,16+Math.random()*8,-Math.random()*14);r.userData={vy:0,d:Math.random()*1.6};hall.add(r);rocks.push(r)}
+ setTimeout(()=>end(false),3400)}
+function reset(){fall=null;rocks.splice(0).forEach(r=>hall.remove(r));pillars.forEach(p=>{p.rotation.set(0,0,0);p.position.x=p.userData.x;p.position.y=8});if(ceilRef)ceilRef.position.y=16;RD=drawRD();Object.assign(st,{r:0,hearts:3,score:0,streak:0,ok:0,bad:0,phase:'idle',mist:[]});if(rowG){hall.remove(rowG);rowG=null}
  debris.splice(0).forEach(d=>hall.remove(d.m));hall.rotation.z=0;hud()}
 $('#go').addEventListener('click',()=>{$('#start').hidden=true;reset();showIntro()});
 $('#again').addEventListener('click',()=>{$('#end').hidden=true;reset();showIntro()});
@@ -320,6 +326,10 @@ function loop(now){
  motes.rotation.y+=dt*.03;
  shake=Math.max(0,shake-dt*1.6);
  cam.position.set((Math.random()-.5)*shake,4.6+(Math.random()-.5)*shake,port?11:8.5);
+ if(fall){fall.t+=dt;fall.ps.forEach(o=>{if(fall.t>o.d){const e=Math.min(1,(fall.t-o.d)/1.1)**2;o.p.rotation.z=o.dir*e*Math.PI/2;o.p.position.x=o.dir*(6.5-e*4);o.p.position.y=8-e*7.3}});
+  if(fall.t>.7&&ceilRef)ceilRef.position.y=Math.max(5.8,16-(fall.t-.7)**2*6);
+  rocks.forEach(r=>{if(fall.t>r.userData.d){r.userData.vy-=dt*18;r.position.y=Math.max(.3,r.position.y+r.userData.vy*dt);r.rotation.x+=dt*3}});
+  shake=Math.max(shake,.15)}
  cam.lookAt(0,4.2,-6);
  ren.render(scene,cam);requestAnimationFrame(loop);
 }

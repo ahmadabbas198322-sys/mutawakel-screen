@@ -258,7 +258,7 @@ let toastT=0;
 function toast(msg,ok){const t=$('#toast');t.textContent=msg;t.classList.toggle('no',!ok);t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),2600)}
 let shake=0;
 function hurt(){st.stones--;st.bad++;st.perfect=false;shake=.5;const f=$('#flash');f.style.transition='none';f.style.opacity=.3;
- requestAnimationFrame(()=>{f.style.transition='';f.style.opacity=0});hud();if(st.stones<=0)setTimeout(()=>end(false),700)}
+ requestAnimationFrame(()=>{f.style.transition='';f.style.opacity=0});hud();if(st.stones<=0)setTimeout(collapse,500)}
 function renderSent(){const q=PZ[st.p],bl=blanks(st.p);let j=0;
  $('#sent').innerHTML=q.parts.map(x=>{if(x[0]!=='#')return`<span>${x}</span>`;const k=j++;
   return k<st.b?`<span class="slot ok">${bl[k]}</span>`:`<span class="slot${k===st.b?' now':''}">&nbsp;</span>`}).join('')}
@@ -304,7 +304,12 @@ function end(win){
  const ms=st.mist.slice(-6);$('#mist').hidden=!ms.length;
  $('#mist').innerHTML='<h4>راجع أخطاءك</h4>'+ms.map(m=>`<p><span class="s">${m.s}</span>«${m.w}»: ${m.why}</p>`).join('');
  $('#end').hidden=false}
-function reset(){PZ=drawPZ();Object.assign(st,{p:0,b:0,stones:MAXS,score:0,run:false,perfect:true,ok:0,bad:0,full:0,mist:[],timed:false});
+let fall=null;
+function collapse(){if(fall)return;st.run=false;$('#card').classList.remove('on');shake=1;const f=$('#flash');f.style.transition='none';f.style.opacity=.45;requestAnimationFrame(()=>{f.style.transition='opacity 1.6s';f.style.opacity=0});
+ ghosts.forEach(g=>g.visible=false);
+ fall={t:0,vy:0,isl:islands[Math.min(st.p,N)],ps:placed.map(m=>({m,vy:0,d:Math.random()*.6,r:(Math.random()-.5)*4}))};
+ setTimeout(()=>end(false),3000)}
+function reset(){fall=null;pl.position.y=0;pl.rotation.set(0,0,0);islands.forEach(g=>g.rotation.set(0,0,0));PZ=drawPZ();Object.assign(st,{p:0,b:0,stones:MAXS,score:0,run:false,perfect:true,ok:0,bad:0,full:0,mist:[],timed:false});
  placed.splice(0).forEach(m=>scene.remove(m));ghosts.splice(0).forEach(m=>scene.remove(m));falls.splice(0).forEach(f=>scene.remove(f.m));anims.length=0;
  islands.forEach(g=>g.position.y=0);tz=iz(0)+1.5;pl.position.z=tz;hud()}
 $('#go').addEventListener('click',()=>{$('#start').hidden=true;reset();showIntro()});
@@ -327,12 +332,14 @@ function loop(now){
  if(st.run&&st.timed){st.left-=dt;const p=Math.max(0,st.left/FTIME);$('#timer i').style.width=(p*100)+'%';
   if(st.p>0)islands[st.p].position.y=-(1-p)*.6+Math.sin(T*30)*(1-p)*.05;
   shake=Math.max(shake,(1-p)*.12);
-  if(st.left<=0){st.run=false;toast('تهاوى الجسر قبل أن يكتمل',false);st.stones=0;hud();setTimeout(()=>end(false),900)}}
+  if(st.left<=0){st.run=false;toast('تهاوى الجسر قبل أن يكتمل',false);st.stones=0;hud();setTimeout(collapse,300)}}
  ghosts.forEach(g=>{if(g.visible)g.material.opacity=.12+Math.sin(T*3)*.06});
  shake=Math.max(0,shake-dt*1.6);
  const d=port?11.5:8.5;
  cam.position.set((Math.random()-.5)*shake,(port?6.8:5.4)+(Math.random()-.5)*shake,pl.position.z+d);
- cam.lookAt(0,.4,pl.position.z-7.5);
+ if(fall){fall.t+=dt;fall.ps.forEach(o=>{if(fall.t>o.d){o.vy-=dt*20;o.m.position.y+=o.vy*dt;o.m.rotation.x+=o.r*dt;o.m.rotation.z+=o.r*.5*dt}});
+  if(fall.t>.4){fall.vy-=dt*16;fall.isl.position.y+=fall.vy*dt*.7;fall.isl.rotation.z+=dt*.35;pl.position.y+=fall.vy*dt;pl.rotation.x+=dt*2}shake=Math.max(shake,.1)}
+ if(fall)cam.lookAt(0,Math.max(pl.position.y,-30),pl.position.z-2);else cam.lookAt(0,.4,pl.position.z-7.5);
  ren.render(scene,cam);requestAnimationFrame(loop);
 }
 hud();

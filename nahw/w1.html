@@ -209,7 +209,7 @@ const M=(c,e=0)=>new THREE.MeshStandardMaterial({color:c,roughness:.85,emissive:
 const stA=M(0x6e5c80),stB=M(0x5b4b6e),railM=M(0x46395e),glowS=M(0xf0c873,1.4);
 const plank=new THREE.BoxGeometry(4.4,.5,1.85);
 const L=N*GAP+26,endZ=-(N*GAP+14);
-for(let z=8,i=0;z>endZ;z-=2,i++){const p=new THREE.Mesh(plank,i%2?stA:stB);p.position.set(0,-.25,z);scene.add(p)}
+const planks=[];for(let z=8,i=0;z>endZ;z-=2,i++){const p=new THREE.Mesh(plank,i%2?stA:stB);p.position.set(0,-.25,z);p.userData.o=p.position.clone();scene.add(p);planks.push(p)}
 [-1,1].forEach(x=>{const r=new THREE.Mesh(new THREE.BoxGeometry(.3,.6,L),railM);r.position.set(x*2.3,.3,8-L/2);scene.add(r)});
 const postG=new THREE.BoxGeometry(.16,1.7,.16),bulbG=new THREE.SphereGeometry(.2,12,10),legG=new THREE.BoxGeometry(1.2,34,1.2);
 for(let z=4;z>endZ;z-=8){[-1,1].forEach(x=>{const p=new THREE.Mesh(postG,railM);p.position.set(x*2.3,1.15,z);scene.add(p);const b=new THREE.Mesh(bulbG,glowS);b.position.set(x*2.3,2.1,z);scene.add(b);const l=new THREE.Mesh(legG,stB);l.position.set(x*1.6,-17.5,z);scene.add(l)})}
@@ -328,7 +328,7 @@ function resolve(ok,why){
   $('#timer').hidden=true;hud();
 }
 $('#next').addEventListener('click',()=>{
-  if(st.hearts<=0)return end(false);
+  if(st.hearts<=0)return collapse();
   const q=G[st.g];
   if(st.k<q.ts.length-1){st.k++;showQ();return}
   gates[st.g].open=true;st.g++;st.k=0;$('#card').classList.remove('on');
@@ -348,7 +348,12 @@ function end(win){
   $('#ea').textContent=acc.toLocaleString('ar')+'٪';$('#eb').textContent=best.toLocaleString('ar');
   $('#end').hidden=false;
 }
+let fall=null;
+function collapse(){if(fall)return;$('#card').classList.remove('on');$('#timer').hidden=true;shake=1;const f=$('#flash');f.style.transition='none';f.style.opacity=.45;requestAnimationFrame(()=>{f.style.transition='opacity 1.6s';f.style.opacity=0});
+ const z=pl.position.z;fall={t:0,vy:0,ps:planks.filter(p=>Math.abs(p.position.z-z)<9).map(p=>({p,vy:0,d:Math.abs(p.position.z-z)*.07,r:new THREE.Vector3((Math.random()-.5)*3,0,(Math.random()-.5)*3)}))};
+ setTimeout(()=>end(false),3000)}
 function reset(){
+  fall=null;planks.forEach(p=>{p.position.copy(p.userData.o);p.rotation.set(0,0,0)});pl.position.y=0;pl.rotation.set(0,0,0);
   G=drawG();
   Object.assign(st,{g:0,k:0,hearts:3,score:0,streak:0,correct:0,total:0,run:false});
   G.forEach(q=>q.ts.forEach(t=>delete t.ok));
@@ -382,8 +387,10 @@ function loop(now){
   if(st.run){st.left-=dt;const p=Math.max(0,st.left/st.max);const bar=$('#timer i');bar.style.width=(p*100)+'%';bar.style.background=p<.3?'var(--rose)':'var(--teal)';
     if(st.left<=0)resolve(false,'time')}
   shake=Math.max(0,shake-dt*1.8);const sx=(Math.random()-.5)*shake,sy=(Math.random()-.5)*shake;
-  cam.position.set(sx,pl.position.y+3.6+sy,pl.position.z+dist);
-  cam.lookAt(0,4.2,pl.position.z-8);
+  if(fall){fall.t+=dt;fall.ps.forEach(o=>{if(fall.t>o.d){o.vy-=dt*20;o.p.position.y+=o.vy*dt;o.p.rotation.x+=o.r.x*dt;o.p.rotation.z+=o.r.z*dt}});
+   if(fall.t>.35){fall.vy-=dt*18;pl.position.y+=fall.vy*dt;pl.rotation.x+=dt*2.5;pl.rotation.z+=dt*1.2}shake=Math.max(shake,.12)}
+  cam.position.set(sx,(fall?3.6:pl.position.y+3.6)+sy,pl.position.z+dist);
+  if(fall)cam.lookAt(0,Math.max(pl.position.y,-40)+1,pl.position.z-2);else cam.lookAt(0,4.2,pl.position.z-8);
   ren.render(scene,cam);requestAnimationFrame(loop);
 }
 hud();
